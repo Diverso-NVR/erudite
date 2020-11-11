@@ -3,22 +3,12 @@ from bson import ObjectId
 from pymongo import MongoClient
 from typing import Optional
 
-"""
-Для подключения к внешней БД:
+DATABASE_URI = "mongodb://host1.miem.vmnet.top:20005"
 
-client = MongoClient()
-db = client['database_url']
-"""
-
-DATABASE_NAME, DATABASE_PORT = 'localhost', 27017
-
-#Для подключения к локальной БД:
-client = MongoClient("mongodb://host1.miem.vmnet.top:20005")
+#Для подключения к внешней БД:
+client = MongoClient(DATABASE_URI)
 
 db = client['equipment']
-
-#Доступ к коллекции
-#series_collection = db['equipments']
 
 #Класс _id
 class PyObjectId(ObjectId):
@@ -37,7 +27,7 @@ class PyObjectId(ObjectId):
     def __modify_schema__(cls, field_schema):
         field_schema.update(type='string')
 
-
+#Класс из бд sources
 class Equipment(BaseModel):
     id: Optional[PyObjectId] = Field(alias='_id')
     ip: str
@@ -56,5 +46,3 @@ class Equipment(BaseModel):
         json_encoders = {
             ObjectId: str
         }
-
-
