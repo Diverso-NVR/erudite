@@ -10,13 +10,15 @@ client = MongoClient()
 db = client['database_url']
 """
 
-#Для подключения к локальной БД:
-client = MongoClient('localhost', 27017)
+DATABASE_NAME, DATABASE_PORT = 'localhost', 27017
 
-db = client['NewDB']
+#Для подключения к локальной БД:
+client = MongoClient("mongodb://host1.miem.vmnet.top:20005")
+
+db = client['equipment']
 
 #Доступ к коллекции
-series_collection = db['series']
+#series_collection = db['equipments']
 
 #Класс _id
 class PyObjectId(ObjectId):
@@ -36,12 +38,19 @@ class PyObjectId(ObjectId):
         field_schema.update(type='string')
 
 
-class Camera(BaseModel):
+class Equipment(BaseModel):
     id: Optional[PyObjectId] = Field(alias='_id')
+    ip: str
     name: str
-    login: str
-    password: str
-    mac: str
+    room_id: int
+    audio: str
+    merge: str
+    port: int
+    rtsp: str
+    tracking: str
+    time_editing: str
+    external_id: str
+
     class Config:
         arbitrary_types_allowed = True
         json_encoders = {
