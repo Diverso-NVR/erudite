@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from db.models import db,Equipment
+from db.models import db,Equipment,Room
 
 
 app = FastAPI()
@@ -11,6 +11,13 @@ def list_equipment():
     for equipment in db.equipments.find():
         equipmentss.append(Equipment(**equipment))
     return {'equipment': equipmentss}
+
+@app.get('/room')
+def list_room():
+    roomss = []
+    for room in db.rooms.find():
+        roomss.append(Room(**room))
+    return {'rooms': roomss}
 
 #newcam = Camera(name = "camera2", login = "log2", password = "pass2", mac = "mac2")
 
