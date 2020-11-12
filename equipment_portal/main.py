@@ -77,3 +77,17 @@ async def delete_room(room_id:int):
 Проверка функции delete_room:
     delete_room(1)
 """
+
+@app.delete('/equipment/{equipment_id}')
+async def delete_equipment(equipment_id:int):
+    db.equipments.remove( {'id': equipment_id})
+
+"""
+Проверка функции delete_equipment:
+    delete_equipment(150)
+"""
+
+
+
+
+#@app.put('/me', response_model=User)
