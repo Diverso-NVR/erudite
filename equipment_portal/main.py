@@ -89,11 +89,20 @@ async def delete_equipment(equipment_id:int):
 
 @app.put('/room/{room_id}')
 async def update_room(room_id:int,new_values_dict:dict):
-    print(new_values_dict)
     db.rooms.update_one( {'_id': room_id},{'$set': new_values_dict  } )
 
 """
 Проверка функции update_room:
     new_name = { "name": 696 }
     update_room(1,new_name)
+"""
+
+@app.put('/equipment/{equipment_id}')
+async def update_equipment(equipment_id:int,new_values_dict:dict):
+    db.equipments.update_one( {'id': equipment_id},{'$set': new_values_dict  } )
+
+"""
+Проверка функции update_equipment:
+    new_name = { "name": 696 }
+    update_equipment(150,new_name)
 """
