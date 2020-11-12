@@ -87,7 +87,13 @@ async def delete_equipment(equipment_id:int):
     delete_equipment(150)
 """
 
+@app.put('/room/{room_id}')
+async def update_room(room_id:int,new_values_dict:dict):
+    print(new_values_dict)
+    db.rooms.update_one( {'_id': room_id},{'$set': new_values_dict  } )
 
-
-
-#@app.put('/me', response_model=User)
+"""
+Проверка функции update_room:
+    new_name = { "name": 696 }
+    update_room(1,new_name)
+"""
