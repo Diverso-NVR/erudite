@@ -38,7 +38,7 @@ async def list_room_equipments(room_id):
     return (equipments_list)
 
 @app.post('/equipment')
-def create_equipment(equipment: Equipment):
+async def create_equipment(equipment: Equipment):
     if hasattr(equipment, 'id_'):
         delattr(equipment, 'id_')
     ret = db.equipments.insert_one(equipment.dict(by_alias=True))
@@ -53,7 +53,7 @@ def create_equipment(equipment: Equipment):
 """
 
 @app.post('/room')
-def create_room(room: dict):
+async def create_room(room: dict):
     try:
         ret = db.rooms.insert_one(room)
     except:
@@ -67,4 +67,13 @@ def create_room(room: dict):
     newroom_dict.update(_id=1)
     print(newroom_dict)
     create_room(newroom_dict)
+"""
+
+@app.delete('/room/{room_id}')
+async def delete_room(room_id:int):
+    db.rooms.remove( {'_id': room_id})
+
+"""
+Проверка функции delete_room:
+    delete_room(1)
 """
