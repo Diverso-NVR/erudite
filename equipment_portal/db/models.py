@@ -3,12 +3,6 @@ from bson import ObjectId
 from pymongo import MongoClient
 from typing import Optional
 
-DATABASE_URI = "mongodb://host1.miem.vmnet.top:20005"
-
-#Для подключения к внешней БД:
-client = MongoClient(DATABASE_URI)
-
-db = client['equipment']
 
 #Класс _id
 class PyObjectId(ObjectId):
@@ -50,7 +44,7 @@ class Equipment(BaseModel):
 
 #Класс из бд rooms
 class Room(BaseModel):
-    id: Optional[PyObjectId] = Field(alias='_id')
+    _id: int
     name: int
     drive: str
     calendar: str
