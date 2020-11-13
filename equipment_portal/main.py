@@ -6,7 +6,7 @@ import asyncio
 
 from db.models import Equipment,Room
 
-
+#Достаем uri для доступа к удаленной БД
 MONGO_DATABASE_URI = os.environ.get('MONGO_DATABASE_URI')
 
 #Для подключения к внешней БД:
@@ -38,6 +38,7 @@ logger = logging.getLogger('equipment_portal')  # инициализация л�
 
 app = FastAPI()
 
+#Достаем все equipment
 @app.get('/equipment')
 async def list_equipments():
     equipmentss = []
@@ -46,6 +47,7 @@ async def list_equipments():
     logger.info(f"Equipment in the database: {equipmentss}")
     return {'equipment': equipmentss}
 
+#Достаем все rooms
 @app.get('/room')
 async def list_rooms():
     rooms_list = [] 
@@ -54,6 +56,7 @@ async def list_rooms():
     logger.info(f"All rooms in the database: {rooms_list}")
     return (rooms_list)
 
+#Достаем все equipment из конкретной комнаты
 @app.get('/room/{room_id}')
 async def list_room_equipments(room_id: int):
     equipments_list = []
@@ -62,6 +65,7 @@ async def list_room_equipments(room_id: int):
     logger.info(f"Equipment in the room {room_id}: {equipments_list}")
     return (equipments_list)
 
+#Добавляем обьект equipment в бд
 @app.post('/equipment')
 async def create_equipment(equipment: Equipment):
     try:
@@ -77,6 +81,7 @@ async def create_equipment(equipment: Equipment):
     asyncio.gather(create_equipment(newequipment))
 """
 
+#Добавляем обьект room в бд
 @app.post('/room')
 async def create_room(room: Room):
     try:
@@ -92,6 +97,7 @@ async def create_room(room: Room):
     asyncio.gather(create_room(newroom))
 """
 
+#Удаляем обьект room из бд
 @app.delete('/room/{room_id}')
 async def delete_room(room_id:int):
     db.rooms.remove( {'_id': room_id})
@@ -102,6 +108,7 @@ async def delete_room(room_id:int):
     asyncio.gather(delete_room(1))
 """
 
+#Удаляем обьект equipment из бд
 @app.delete('/equipment/{equipment_id}')
 async def delete_equipment(equipment_id:int):
     db.equipment.remove( {'_id': equipment_id})
@@ -112,6 +119,7 @@ async def delete_equipment(equipment_id:int):
     asyncio.gather(delete_equipment(150))
 """
 
+#Обновляем/добавляем поле/поля в room в бд
 @app.put('/room/{room_id}')
 async def update_room(room_id:int,new_values_dict:dict):
     db.rooms.update_one( {'_id': room_id},{'$set': new_values_dict  } )
@@ -123,6 +131,7 @@ async def update_room(room_id:int,new_values_dict:dict):
     asyncio.gather(update_room(1,new_name))
 """
 
+#Обновляем/добавляем поле/поля в equipment в бд
 @app.put('/equipment/{equipment_id}')
 async def update_equipment(equipment_id:int,new_values_dict:dict):
     db.equipment.update_one( {'_id': equipment_id},{'$set': new_values_dict  } )
