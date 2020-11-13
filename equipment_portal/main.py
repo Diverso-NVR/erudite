@@ -9,19 +9,19 @@ DATABASE_URI = "mongodb://host1.miem.vmnet.top:20005"
 client = MongoClient(DATABASE_URI)
 
 #Доступ к БД через pymongo
-db = client['equipment']
+db = client['Equipment']
 
 
 app = FastAPI()
 
-@app.get('/equipments')
+@app.get('/equipment')
 async def list_equipments():
     equipmentss = []
-    for equipment in db.equipments.find():
+    for equipment in db.equipment.find():
         equipmentss.append(Equipment(**equipment))
     return {'equipment': equipmentss}
 
-@app.get('/rooms')
+@app.get('/room')
 async def list_rooms():
     rooms_list = [] 
     for room in db.rooms.find():
@@ -32,7 +32,7 @@ async def list_rooms():
 @app.get('/room/{room_id}')
 async def list_room_equipments(room_id):
     equipments_list = []
-    for equipment in db.equipments.find({ 'room_id': int(room_id) }):
+    for equipment in db.equipment.find({ 'room_id': int(room_id) }):
         equipments_list.append(Equipment(**equipment))
     print(equipments_list)
     return (equipments_list)
@@ -41,7 +41,7 @@ async def list_room_equipments(room_id):
 async def create_equipment(equipment: Equipment):
     if hasattr(equipment, 'id_'):
         delattr(equipment, 'id_')
-    ret = db.equipments.insert_one(equipment.dict(by_alias=True))
+    ret = db.equipment.insert_one(equipment.dict(by_alias=True))
     equipment.id_ = ret.inserted_id
     print("This equipment already exists in the equipments collection")
     return {'equipment': equipment}
@@ -80,7 +80,7 @@ async def delete_room(room_id:int):
 
 @app.delete('/equipment/{equipment_id}')
 async def delete_equipment(equipment_id:int):
-    db.equipments.remove( {'id': equipment_id})
+    db.equipment.remove( {'id': equipment_id})
 
 """
 Проверка функции delete_equipment:
@@ -99,7 +99,7 @@ async def update_room(room_id:int,new_values_dict:dict):
 
 @app.put('/equipment/{equipment_id}')
 async def update_equipment(equipment_id:int,new_values_dict:dict):
-    db.equipments.update_one( {'id': equipment_id},{'$set': new_values_dict  } )
+    db.equipment.update_one( {'id': equipment_id},{'$set': new_values_dict  } )
 
 """
 Проверка функции update_equipment:

@@ -4,27 +4,9 @@ from pymongo import MongoClient
 from typing import Optional
 
 
-#Класс _id
-class PyObjectId(ObjectId):
-
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v):
-        if not ObjectId.is_valid(v):
-            raise ValueError('Invalid objectid')
-        return ObjectId(v)
-
-    @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update(type='string')
-
 #Класс из бд sources
 class Equipment(BaseModel):
-    id_: Optional[PyObjectId] = Field(alias='_id')
-    id: int
+    _id: int
     ip: str
     name: str
     room_id: int
