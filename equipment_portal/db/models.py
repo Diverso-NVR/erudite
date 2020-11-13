@@ -6,7 +6,7 @@ from typing import Optional
 
 #Класс из бд sources
 class Equipment(BaseModel):
-    _id: int
+    id: int
     ip: str
     name: str
     room_id: int
@@ -19,14 +19,11 @@ class Equipment(BaseModel):
     external_id: str
 
     class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {
-            ObjectId: str
-        }
+        fields = {'id': '_id'}
 
 #Класс из бд rooms
 class Room(BaseModel):
-    _id: int
+    id: int
     name: int
     drive: str
     calendar: str
@@ -40,7 +37,4 @@ class Room(BaseModel):
     ruz_id: int
 
     class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {
-            ObjectId: str
-        }
+        fields = {'id': '_id'}
