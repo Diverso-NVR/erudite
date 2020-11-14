@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 from bson import ObjectId
-from pymongo import MongoClient
 from typing import Optional
 
 
