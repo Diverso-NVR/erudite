@@ -18,6 +18,7 @@ class Equipment(BaseModel):
     time_editing: str
     external_id: str
 
+    #Нужно для того, чтобы _id можно было достать из класса
     class Config:
         fields = {'id': '_id'}
 
@@ -36,5 +37,6 @@ class Room(BaseModel):
     stream_url: str
     ruz_id: int
 
+    #Нужно для того, чтобы _id можно было достать из класса
     class Config:
         fields = {'id': '_id'}

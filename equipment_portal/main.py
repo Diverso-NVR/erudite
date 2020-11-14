@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from pymongo import MongoClient
+import motor.motor_asyncio
 import os
 import logging
 import asyncio
@@ -10,9 +10,9 @@ from db.models import Equipment,Room
 MONGO_DATABASE_URI = os.environ.get('MONGO_DATABASE_URI')
 
 #Для подключения к внешней БД:
-client = MongoClient(MONGO_DATABASE_URI)
+client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DATABASE_URI)
 
-#Доступ к БД через pymongo
+#Доступ к БД через motor
 db = client['Equipment']
 
 # функция логгера
@@ -41,35 +41,49 @@ app = FastAPI()
 #Достаем все equipment
 @app.get('/equipment')
 async def list_equipments():
-    equipmentss = []
-    for equipment in db.equipment.find():
-        equipmentss.append(Equipment(**equipment))
-    logger.info(f"Equipment in the database: {equipmentss}")
-    return {'equipment': equipmentss}
+    equipment_list = []
+    async for equipment in db.equipment.find() :
+        equipment_list.append(Equipment(**equipment))
+    logger.info(f"Equipment in the database: {equipment_list}")
+    return {'equipment': equipment_list}
 
 #Достаем все rooms
 @app.get('/room')
 async def list_rooms():
     rooms_list = [] 
-    for room in db.rooms.find():
-        rooms_list.append(room)
+    async for room in db.rooms.find():
+        rooms_list.append(Room(**room))
     logger.info(f"All rooms in the database: {rooms_list}")
     return (rooms_list)
 
 #Достаем все equipment из конкретной комнаты
-@app.get('/room/{room_id}')
+@app.get('/room_equipment/{room_id}')
 async def list_room_equipments(room_id: int):
-    equipments_list = []
-    for equipment in db.equipment.find({ 'room_id': room_id }):
-        equipments_list.append(equipment)
-    logger.info(f"Equipment in the room {room_id}: {equipments_list}")
-    return (equipments_list)
+    equipment_list = []
+    async for equipment in db.equipment.find({ 'room_id': room_id }):
+        equipment_list.append(Equipment(**equipment))
+    logger.info(f"Equipment in the room {room_id}: {equipment_list}")
+    return (equipment_list)
+
+#Достаем обьект room из бд
+@app.get('/room/{room_id}')
+async def find_room(room_id: int):
+    room = await db.rooms.find_one({ '_id': room_id })
+    logger.info(f"Room {room_id}: {Room(**room)}")
+    return (Room(**room))
+
+#Достаем обьект equipment из бд
+@app.get('/equipment/{equipment_id}')
+async def find_equipment(equipment_id: int):
+    equipment = await db.equipment.find_one({ '_id': equipment_id })
+    logger.info(f"Equipment {equipment_id}: {Equipment(**equipment)}")
+    return (Equipment(**equipment))
 
 #Добавляем обьект equipment в бд
 @app.post('/equipment')
 async def create_equipment(equipment: Equipment):
     try:
-        db.equipment.insert_one(equipment.dict(by_alias=True))
+        await db.equipment.insert_one(equipment.dict(by_alias=True))
         logger.info(f"Equipment with id: {equipment.id}  -  added to the database")
     except:
         logger.warning(f"Equipment with id: {equipment.id}  -  already exists in the database")
@@ -81,11 +95,12 @@ async def create_equipment(equipment: Equipment):
     asyncio.gather(create_equipment(newequipment))
 """
 
+
 #Добавляем обьект room в бд
 @app.post('/room')
 async def create_room(room: Room):
     try:
-        db.rooms.insert_one(room.dict(by_alias=True))
+        await db.rooms.insert_one(room.dict(by_alias=True))
         logger.info(f"Room with id: {room.id}  -  added to the database")
     except:
         logger.warning(f"Room with id: {room.id}  -  already exists in the database")
@@ -100,7 +115,7 @@ async def create_room(room: Room):
 #Удаляем обьект room из бд
 @app.delete('/room/{room_id}')
 async def delete_room(room_id:int):
-    db.rooms.remove( {'_id': room_id})
+    await db.rooms.delete_one( {'_id': room_id})
     logger.info(f"Room with id: {room_id}  -  deleted from the database")
 
 """
@@ -111,7 +126,7 @@ async def delete_room(room_id:int):
 #Удаляем обьект equipment из бд
 @app.delete('/equipment/{equipment_id}')
 async def delete_equipment(equipment_id:int):
-    db.equipment.remove( {'_id': equipment_id})
+    await db.equipment.delete_one( {'_id': equipment_id})
     logger.info(f"Equipment with id: {equipment_id}  -  deleted from the database")
 
 """
@@ -122,7 +137,7 @@ async def delete_equipment(equipment_id:int):
 #Обновляем/добавляем поле/поля в room в бд
 @app.put('/room/{room_id}')
 async def update_room(room_id:int,new_values_dict:dict):
-    db.rooms.update_one( {'_id': room_id},{'$set': new_values_dict  } )
+    await db.rooms.update_one( {'_id': room_id},{'$set': new_values_dict  } )
     logger.info(f"Room with id: {room_id}  -  updated")#Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
 
 """
@@ -134,7 +149,7 @@ async def update_room(room_id:int,new_values_dict:dict):
 #Обновляем/добавляем поле/поля в equipment в бд
 @app.put('/equipment/{equipment_id}')
 async def update_equipment(equipment_id:int,new_values_dict:dict):
-    db.equipment.update_one( {'_id': equipment_id},{'$set': new_values_dict  } )
+    await db.equipment.update_one( {'_id': equipment_id},{'$set': new_values_dict  } )
     logger.info(f"Equipment with id: {equipment_id}  -  updated")#Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
 
 """
