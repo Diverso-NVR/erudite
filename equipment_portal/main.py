@@ -12,8 +12,14 @@ MONGO_DATABASE_URI = os.environ.get('MONGO_DATABASE_URI')
 #Для подключения к внешней БД:
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DATABASE_URI)
 
+TESTING = os.environ.get("TESTING")
+
 #Доступ к БД через motor
 db = client['Equipment']
+if TESTING:
+    db = client['testDb']
+else:
+    db = client['Equipment']
 
 # функция логгера
 def create_logger(mode='INFO'):
