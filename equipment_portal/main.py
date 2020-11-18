@@ -7,7 +7,7 @@ import asyncio
 from db.models import Equipment,Room
 
 #Достаем uri для доступа к удаленной БД
-MONGO_DATABASE_URI = os.environ.get('MONGO_DATABASE_URI')
+MONGO_DATABASE_URI = "mongodb://equipment_user:massivePassw0rd28@host1.miem.vmnet.top:20005/test"#os.environ.get('MONGO_DATABASE_URI')
 
 #Для подключения к внешней БД:
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DATABASE_URI)
