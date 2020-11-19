@@ -3,7 +3,7 @@ import motor.motor_asyncio
 import logging
 
 from db.models import Equipment, Room, db
-from routes import rooms, equipment
+from routers import rooms, equipment
 
 # функция логгера
 def create_logger(mode="INFO"):
