@@ -14,9 +14,10 @@ async def list_equipments():
     """Достаем все equipment"""
 
     equipment_list = []
+    async for equipment in db.equipment.find():
+        equipment_list.append(Equipment(**equipment))
     try:
-        async for equipment in db.equipment.find():
-            equipment_list.append(Equipment(**equipment))
+
         if len(equipment_list) == 0:
             logger.info(f"No items")
             return {}
@@ -49,8 +50,8 @@ async def list_room_equipments(room_id: int):
 async def find_equipment(equipment_id: int):
     """Достаем обьект equipment из бд"""
 
-    equipment = await db.equipment.find_one({"_id": equipment_id})
     try:
+        equipment = await db.equipment.find_one({"_id": equipment_id})
         if equipment:
             logger.info(f"Equipment {equipment_id}: {Equipment(**equipment)}")
             return Equipment(**equipment)

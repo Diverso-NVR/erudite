@@ -31,8 +31,8 @@ async def list_rooms():
 async def find_room(room_id: int):
     """Достаем обьект room из бд"""
 
-    room = await db.rooms.find_one({"_id": room_id})
     try:
+        room = await db.rooms.find_one({"_id": room_id})
         if room:
             logger.info(f"Room {room_id}: {Room(**room)}")
             return Room(**room)

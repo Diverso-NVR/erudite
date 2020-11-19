@@ -1,6 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, middleware
 import motor.motor_asyncio
 import logging
+import uvicorn
+from starlette.middleware.base import BaseHTTPMiddleware
+from middleware import authorization
+
 
 from db.models import Equipment, Room, db
 from routers import rooms, equipment
@@ -29,3 +33,5 @@ app = FastAPI()
 
 app.include_router(rooms.router)
 app.include_router(equipment.router)
+
+app.add_middleware(BaseHTTPMiddleware, dispatch=authorization)  # применяется ко всем запросам
