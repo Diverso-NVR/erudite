@@ -48,10 +48,17 @@ async def list_equipments():
     """Достаем все equipment"""
 
     equipment_list = []
-    async for equipment in db.equipment.find():
-        equipment_list.append(Equipment(**equipment))
-    logger.info(f"Equipment in the database: {equipment_list}")
-    return {"equipment": equipment_list}
+    try:
+        async for equipment in db.equipment.find():
+            equipment_list.append(Equipment(**equipment))
+        if len(equipment_list) == 0:
+            logger.info(f"No items")
+            return {}
+        else:
+            logger.info(f"Equipment in the database: {equipment_list}")
+            return {"equipment": equipment_list}
+    except:
+        logger.info(f"Wrong data in the database")
 
 
 @app.get("/room")
@@ -59,10 +66,17 @@ async def list_rooms():
     """Достаем все rooms"""
 
     rooms_list = []
-    async for room in db.rooms.find():
-        rooms_list.append(Room(**room))
-    logger.info(f"All rooms in the database: {rooms_list}")
-    return rooms_list
+    try:
+        async for room in db.rooms.find():
+            rooms_list.append(Room(**room))
+        if len(rooms_list) == 0:
+            logger.info(f"No rooms found")
+            return {}
+        else:
+            logger.info(f"All rooms in the database: {rooms_list}")
+            return rooms_list
+    except:
+        logger.info(f"Wrong data in the database")
 
 
 @app.get("/room_equipment/{room_id}")
@@ -70,10 +84,17 @@ async def list_room_equipments(room_id: int):
     """Достаем все equipment из конкретной комнаты"""
 
     equipment_list = []
-    async for equipment in db.equipment.find({"room_id": room_id}):
-        equipment_list.append(Equipment(**equipment))
-    logger.info(f"Equipment in the room {room_id}: {equipment_list}")
-    return equipment_list
+    try:
+        async for equipment in db.equipment.find({"room_id": room_id}):
+            equipment_list.append(Equipment(**equipment))
+        if len(equipment_list) == 0:
+            logger.info(f"No equipment in the room found")
+            return {}
+        else:
+            logger.info(f"Equipment in the room {room_id}: {equipment_list}")
+            return equipment_list
+    except:
+        logger.info(f"Wrong data in the database")
 
 
 @app.get("/room/{room_id}")
@@ -81,8 +102,15 @@ async def find_room(room_id: int):
     """Достаем обьект room из бд"""
 
     room = await db.rooms.find_one({"_id": room_id})
-    logger.info(f"Room {room_id}: {Room(**room)}")
-    return Room(**room)
+    try:
+        if room:
+            logger.info(f"Room {room_id}: {Room(**room)}")
+            return Room(**room)
+        else:
+            logger.info(f"This room is not found")
+            return {}
+    except:
+        logger.info(f"Wrong data in the database")
 
 
 @app.get("/equipment/{equipment_id}")
@@ -90,8 +118,15 @@ async def find_equipment(equipment_id: int):
     """Достаем обьект equipment из бд"""
 
     equipment = await db.equipment.find_one({"_id": equipment_id})
-    logger.info(f"Equipment {equipment_id}: {Equipment(**equipment)}")
-    return Equipment(**equipment)
+    try:
+        if equipment:
+            logger.info(f"Equipment {equipment_id}: {Equipment(**equipment)}")
+            return Equipment(**equipment)
+        else:
+            logger.info(f"This equipment is not found")
+            return {}
+    except:
+        logger.info(f"Wrong data in the database")
 
 
 @app.post("/equipment")
@@ -138,17 +173,23 @@ async def delete_equipment(equipment_id: int):
 async def update_room(room_id: int, new_values_dict: dict):
     """Обновляем/добавляем поле/поля в room в бд"""
 
-    await db.rooms.update_one({"_id": room_id}, {"$set": new_values_dict})
-    logger.info(
-        f"Room with id: {room_id}  -  updated"
-    )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+    try:
+        await db.rooms.update_one({"_id": room_id}, {"$set": new_values_dict})
+        logger.info(
+            f"Room with id: {room_id}  -  updated"
+        )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+    except:
+        logger.info(f"Element with this id not found")
 
 
 @app.put("/equipment/{equipment_id}")
 async def update_equipment(equipment_id: int, new_values_dict: dict):
     """Обновляем/добавляем поле/поля в equipment в бд"""
 
-    await db.equipment.update_one({"_id": equipment_id}, {"$set": new_values_dict})
-    logger.info(
-        f"Equipment with id: {equipment_id}  -  updated"
-    )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+    try:
+        await db.equipment.update_one({"_id": equipment_id}, {"$set": new_values_dict})
+        logger.info(
+            f"Equipment with id: {equipment_id}  -  updated"
+        )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+    except:
+        logger.info(f"Element with this id not found")
