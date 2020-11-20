@@ -1,9 +1,10 @@
 import os
 import logging
-from fastapi import FastAPI, Request, HTTPException, Response
+from fastapi import Request, Response
 
+import asyncpg
 
-DATABASE_URI = os.environ.get("DATABASE_URI")
+PSQL_DATABASE_URI = os.environ.get("DB_URL")
 
 
 async def authorization(request: Request, call_next):
@@ -22,11 +23,11 @@ async def check_jwt_token_and_key(key: str):
 
     if key:
         try:
-            conn = await asyncpg.connect(DATABASE_URI)
+            conn = await asyncpg.connect(PSQL_DATABASE_URI)
             user = await conn.fetchrow("SELECT * FROM users WHERE api_key = $1", key)
             await conn.close()
             if not user:
-                return Response(f"User not found", status_code=401)
+                return Response("User not found", status_code=401)
             return Response("ok", status_code=200)
         except Exception as exp:
             logging.error(exp)

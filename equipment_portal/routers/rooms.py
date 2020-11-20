@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 import logging
-import motor.motor_asyncio
 
 from db.models import Equipment, Room, db
 
@@ -18,13 +17,13 @@ async def list_rooms():
         async for room in db.rooms.find():
             rooms_list.append(Room(**room))
         if len(rooms_list) == 0:
-            logger.info(f"No rooms found")
+            logger.info("No rooms found")
             return {}
         else:
             logger.info(f"All rooms in the database: {rooms_list}")
             return rooms_list
-    except:
-        logger.info(f"Wrong data in the database")
+    except Exception:
+        logger.error("Wrong data in the database")
 
 
 @router.get("/room/{room_id}")
@@ -37,10 +36,10 @@ async def find_room(room_id: int):
             logger.info(f"Room {room_id}: {Room(**room)}")
             return Room(**room)
         else:
-            logger.info(f"This room is not found")
+            logger.info("This room is not found")
             return {}
-    except:
-        logger.info(f"Wrong data in the database")
+    except Exception:
+        logger.error("Wrong data in the database")
 
 
 @router.post("/room")
@@ -50,8 +49,9 @@ async def create_room(room: Room):
     try:
         await db.rooms.insert_one(room.dict(by_alias=True))
         logger.info(f"Room with id: {room.id}  -  added to the database")
-    except:
-        logger.warning(f"Room with id: {room.id}  -  already exists in the database")
+    except Exception:
+        logger.error(f"Room with id: {room.id}  -  already exists in the database")
+
     return {"room": room}
 
 
@@ -72,5 +72,23 @@ async def update_room(room_id: int, new_values_dict: dict):
         logger.info(
             f"Room with id: {room_id}  -  updated"
         )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
-    except:
-        logger.info(f"Element with this id not found")
+    except Exception:
+        logger.error("Element with this id not found")
+
+
+@router.get("/room/{room_id}/equipment")
+async def list_room_equipments(room_id: int):
+    """Достаем все equipment из конкретной комнаты"""
+
+    equipment_list = []
+    try:
+        async for equipment in db.equipment.find({"room_id": room_id}):
+            equipment_list.append(Equipment(**equipment))
+        if len(equipment_list) == 0:
+            logger.info("No equipment in the room found")
+            return {}
+        else:
+            logger.info(f"Equipment in the room {room_id}: {equipment_list}")
+            return equipment_list
+    except Exception:
+        logger.error("Wrong data in the database")

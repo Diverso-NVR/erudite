@@ -1,12 +1,10 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import os
 import motor.motor_asyncio
 
-# Достаем uri для доступа к удаленной БД
-MONGO_DATABASE_URI = os.environ.get("MONGO_DATABASE_URI")
 
 # Для подключения к внешней БД:
-client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DATABASE_URI)
+client = motor.motor_asyncio.AsyncIOMotorClient(os.environ.get("MONGO_DATABASE_URI"))
 
 # Проверка на тест
 TESTING = os.environ.get("TESTING")
@@ -15,7 +13,8 @@ TESTING = os.environ.get("TESTING")
 if TESTING:
     db = client["testDb"]
 else:
-    db = client["Equipment"]
+    db = client["erudite"]
+
 
 # Класс из бд sources
 class Equipment(BaseModel):

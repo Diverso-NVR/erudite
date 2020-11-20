@@ -1,6 +1,5 @@
 from fastapi.testclient import TestClient
 import os
-import pytest
 
 from db.models import Equipment, Room
 from main import app

@@ -1,13 +1,6 @@
-from fastapi import FastAPI, Request, middleware
-import motor.motor_asyncio
 import logging
-import uvicorn
 from starlette.middleware.base import BaseHTTPMiddleware
-from middleware import authorization
 
-
-from db.models import Equipment, Room, db
-from routers import rooms, equipment
 
 # функция логгера
 def create_logger(mode="INFO"):
@@ -19,19 +12,35 @@ def create_logger(mode="INFO"):
     handler = logging.StreamHandler()
     handler.setLevel(logs[mode])
 
-    formatter = logging.Formatter("%(levelname)-8s  %(asctime)s    %(message)s", datefmt="%d-%m-%Y %I:%M:%S %p")
+    formatter = logging.Formatter(
+        "%(levelname)-8s  %(asctime)s    %(message)s", datefmt="%d-%m-%Y %I:%M:%S %p"
+    )
 
     handler.setFormatter(formatter)
 
     logger.addHandler(handler)
 
 
-create_logger()  # Создание логгера
-logger = logging.getLogger("equipment_portal")  # инициализация логгера
+def create_app():
+    create_logger()  # Создание логгера
 
-app = FastAPI()
+    from fastapi import FastAPI
 
-app.include_router(rooms.router)
-app.include_router(equipment.router)
+    app = FastAPI()
 
-app.add_middleware(BaseHTTPMiddleware, dispatch=authorization)  # применяется ко всем запросам
+    from routers.rooms import router as room_router
+    from routers.equipment import router as equipment_router
+
+    app.include_router(room_router)
+    app.include_router(equipment_router)
+
+    from middleware import authorization
+
+    app.add_middleware(
+        BaseHTTPMiddleware, dispatch=authorization
+    )  # применяется ко всем запросам
+
+    return app
+
+
+app = create_app()
