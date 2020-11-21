@@ -5,7 +5,7 @@ from db.models import Equipment, db
 
 router = APIRouter()
 
-logger = logging.getLogger("equipment_portal")
+logger = logging.getLogger("erudite")
 
 
 @router.get("/equipment")
@@ -51,9 +51,7 @@ async def create_equipment(equipment: Equipment):
         await db.equipment.insert_one(equipment.dict(by_alias=True))
         logger.info(f"Equipment with id: {equipment.id}  -  added to the database")
     except Exception:
-        logger.error(
-            f"Equipment with id: {equipment.id}  -  already exists in the database"
-        )
+        logger.error(f"Equipment with id: {equipment.id}  -  already exists in the database")
     return {"equipment": equipment}
 
 

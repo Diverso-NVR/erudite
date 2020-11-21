@@ -5,15 +5,15 @@ from db.models import Equipment, Room, db
 
 router = APIRouter()
 
-logger = logging.getLogger("equipment_portal")
+logger = logging.getLogger("erudite")
 
 
 @router.get("/room")
 async def list_rooms():
     """Достаем все rooms"""
-
     rooms_list = []
     try:
+
         async for room in db.rooms.find():
             rooms_list.append(Room(**room))
         if len(rooms_list) == 0:

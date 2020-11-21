@@ -6,15 +6,13 @@ from starlette.middleware.base import BaseHTTPMiddleware
 def create_logger(mode="INFO"):
     logs = {"INFO": logging.INFO, "DEBUG": logging.DEBUG}
 
-    logger = logging.getLogger("equipment_portal")
+    logger = logging.getLogger("erudite")
     logger.setLevel(logs[mode])
 
     handler = logging.StreamHandler()
     handler.setLevel(logs[mode])
 
-    formatter = logging.Formatter(
-        "%(levelname)-8s  %(asctime)s    %(message)s", datefmt="%d-%m-%Y %I:%M:%S %p"
-    )
+    formatter = logging.Formatter("%(levelname)-8s  %(asctime)s    %(message)s", datefmt="%d-%m-%Y %I:%M:%S %p")
 
     handler.setFormatter(formatter)
 
@@ -36,9 +34,7 @@ def create_app():
 
     from middleware import authorization
 
-    app.add_middleware(
-        BaseHTTPMiddleware, dispatch=authorization
-    )  # применяется ко всем запросам
+    app.add_middleware(BaseHTTPMiddleware, dispatch=authorization)  # применяется ко всем запросам
 
     return app
 
