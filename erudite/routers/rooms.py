@@ -12,29 +12,32 @@ logger = logging.getLogger("erudite")
 async def list_rooms():
     """Достаем все rooms"""
     rooms_list = []
-    try:
+    # try:
 
-        async for room in db.rooms.find():
-            rooms_list.append(Room(**room))
-        if len(rooms_list) == 0:
-            logger.info("No rooms found")
-            return {}
-        else:
-            logger.info(f"All rooms in the database: {rooms_list}")
-            return rooms_list
-    except Exception:
-        logger.error("Wrong data in the database")
+    async for room in db.rooms.find():
+        name = room.get("_id")
+        room.pop("_id")
+        room.update({"name": name})
+        rooms_list.append(room)
+    if len(rooms_list) == 0:
+        logger.info("No rooms found")
+        return {}
+    else:
+        logger.info(f"All rooms in the database: {rooms_list}")
+        return rooms_list.__repr__()
+    # except Exception:
+    # logger.error("Wrong data in the database")
 
 
-@router.get("/room/{room_id}")
-async def find_room(room_id: int):
+@router.get("/room/{room_name}")
+async def find_room(room_name: str):
     """Достаем обьект room из бд"""
 
     try:
-        room = await db.rooms.find_one({"_id": room_id})
+        room = await db.rooms.find_one({"_id": room_name})
         if room:
-            logger.info(f"Room {room_id}: {Room(**room)}")
-            return Room(**room)
+            logger.info(f"Room {room_name}: {Room(**room)}")
+            return Room(**room).__repr__()
         else:
             logger.info("This room is not found")
             return {}
@@ -48,47 +51,61 @@ async def create_room(room: Room):
 
     try:
         await db.rooms.insert_one(room.dict(by_alias=True))
-        logger.info(f"Room with id: {room.id}  -  added to the database")
+        logger.info(f"Room: {room.name}  -  added to the database")
     except Exception:
-        logger.error(f"Room with id: {room.id}  -  already exists in the database")
+        logger.error(f"Room: {room.name}  -  already exists in the database")
 
     return {"room": room}
 
 
-@router.delete("/room/{room_id}")
-async def delete_room(room_id: int):
+@router.delete("/room/{room_name}")
+async def delete_room(room_name: str):
     """Удаляем обьект room из бд"""
 
-    await db.rooms.delete_one({"_id": room_id})
-    logger.info(f"Room with id: {room_id}  -  deleted from the database")
+    await db.rooms.delete_one({"_id": room_name})
+    logger.info(f"Room: {room_name}  -  deleted from the database")
 
 
-@router.put("/room/{room_id}")
-async def update_room(room_id: int, new_values_dict: dict):
+@router.patch("/room/{room_name}")
+async def patch_room(room_name: str, new_values_dict: dict):
     """Обновляем/добавляем поле/поля в room в бд"""
 
     try:
-        await db.rooms.update_one({"_id": room_id}, {"$set": new_values_dict})
+        await db.rooms.update_one({"_id": room_name}, {"$set": new_values_dict})
         logger.info(
-            f"Room with id: {room_id}  -  updated"
+            f"Room: {room_name}  -  pached"
         )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
     except Exception:
-        logger.error("Element with this id not found")
+        logger.error("Element with this name not found")
 
 
-@router.get("/room/{room_id}/equipment")
-async def list_room_equipments(room_id: int):
+@router.put("/room/{room_name}")
+async def update_room(room_name: str, new_values: Room):
+    """Обновляем все поле/поля в room в бд"""
+
+    # try:
+    await db.rooms.delete_one({"_id": room_name})
+    await db.rooms.insert_one(new_values.dict(by_alias=True))
+    logger.info(
+        f"Room: {room_name}  -  updated"
+    )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+    # except Exception:
+    # logger.error("Element with this name not found")
+
+
+@router.get("/room/{room_name}/equipment")
+async def list_room_equipments(room_name: str):
     """Достаем все equipment из конкретной комнаты"""
 
     equipment_list = []
     try:
-        async for equipment in db.equipment.find({"room_id": room_id}):
+        async for equipment in db.equipment.find({"room_id": room_name}):
             equipment_list.append(Equipment(**equipment))
         if len(equipment_list) == 0:
             logger.info("No equipment in the room found")
             return {}
         else:
-            logger.info(f"Equipment in the room {room_id}: {equipment_list}")
+            logger.info(f"Equipment in the room {room_name}: {equipment_list}")
             return equipment_list
     except Exception:
         logger.error("Wrong data in the database")

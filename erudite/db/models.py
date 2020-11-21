@@ -15,10 +15,10 @@ TESTING = os.environ.get("TESTING")
 if TESTING:
     db = client["testDb"]
 else:
-    db = client["erudite"]
-    # db = client["Equipment"]  # -  Dev
+    # db = client["erudite"]
+    db = client["Equipment"]  # -  Dev
 
-
+"""
 class PyObjectId(ObjectId):
     @classmethod
     def __get_validators__(cls):
@@ -33,14 +33,15 @@ class PyObjectId(ObjectId):
     @classmethod
     def __modify_schema__(cls, field_schema):
         field_schema.update(type="string")
+"""
 
 
 # Класс из бд sources
 class Equipment(BaseModel):
-    id: int
+    id: str
     ip: Optional[str] = None
     name: Optional[str] = None
-    room_id: Optional[int] = None
+    room_id: Optional[str] = None
     audio: Optional[str] = None
     merge: Optional[str] = None
     port: Optional[int] = None
@@ -56,8 +57,7 @@ class Equipment(BaseModel):
 
 # Класс из бд rooms
 class Room(BaseModel):
-    id: int
-    name: Optional[int] = None
+    name: str
     drive: Optional[str] = None
     calendar: Optional[str] = None
     tracking_state: Optional[str] = None
@@ -67,8 +67,23 @@ class Room(BaseModel):
     tracking_source: Optional[str] = None
     auto_control: Optional[str] = None
     stream_url: Optional[str] = None
-    ruz_id: Optional[int] = None
+    ruz_id: Optional[str] = None
 
-    # Нужно для того, чтобы _id можно было достать из класса
     class Config:
-        fields = {"id": "_id"}
+        fields = {"name": "_id"}
+
+    def __repr__(self):
+        out = {
+            "name": self.name,
+            "drive": self.drive,
+            "calendar": self.calendar,
+            "tracking_state": self.tracking_state,
+            "main_source": self.main_source,
+            "screen_source": self.screen_source,
+            "sound_source": self.sound_source,
+            "tracking_source": self.tracking_source,
+            "auto_control": self.auto_control,
+            "stream_url": self.stream_url,
+            "ruz_id": self.ruz_id,
+        }
+        return out
