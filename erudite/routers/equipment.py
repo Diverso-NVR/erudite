@@ -16,7 +16,6 @@ async def list_equipments():
     async for equipment in db.equipment.find():
         equipment_list.append(Equipment(**equipment))
     try:
-
         if len(equipment_list) == 0:
             logger.info("No items")
             return {}

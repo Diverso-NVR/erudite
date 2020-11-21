@@ -99,7 +99,7 @@ async def list_room_equipments(room_name: str):
 
     equipment_list = []
     try:
-        async for equipment in db.equipment.find({"room_id": room_name}):
+        async for equipment in db.equipment.find({"room_name": room_name}):
             equipment_list.append(Equipment(**equipment))
         if len(equipment_list) == 0:
             logger.info("No equipment in the room found")

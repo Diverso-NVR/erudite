@@ -18,30 +18,12 @@ else:
     # db = client["erudite"]
     db = client["Equipment"]  # -  Dev
 
-"""
-class PyObjectId(ObjectId):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v):
-        if not ObjectId.is_valid(v):
-            raise ValueError("Invalid objectid")
-        return ObjectId(v)
-
-    @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update(type="string")
-"""
-
 
 # Класс из бд sources
 class Equipment(BaseModel):
-    id: str
     ip: Optional[str] = None
     name: Optional[str] = None
-    room_id: Optional[str] = None
+    room_name: Optional[str] = None
     audio: Optional[str] = None
     merge: Optional[str] = None
     port: Optional[int] = None
@@ -49,10 +31,6 @@ class Equipment(BaseModel):
     tracking: Optional[str] = None
     time_editing: Optional[str] = None
     external_id: Optional[str] = None
-
-    # Нужно для того, чтобы _id можно было достать из класса
-    class Config:
-        fields = {"id": "_id"}
 
 
 # Класс из бд rooms
@@ -69,6 +47,7 @@ class Room(BaseModel):
     stream_url: Optional[str] = None
     ruz_id: Optional[str] = None
 
+    # Нужно для того, чтобы _id можно было достать из класса
     class Config:
         fields = {"name": "_id"}
 
