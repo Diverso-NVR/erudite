@@ -35,7 +35,7 @@ class Equipment(BaseModel):
 
 # Класс из бд rooms
 class Room(BaseModel):
-    name: str
+    name: Optional[str] = None
     drive: Optional[str] = None
     calendar: Optional[str] = None
     tracking_state: Optional[str] = None
@@ -48,8 +48,8 @@ class Room(BaseModel):
     ruz_id: Optional[str] = None
 
     # Нужно для того, чтобы _id можно было достать из класса
-    class Config:
-        fields = {"name": "_id"}
+    # class Config:
+    # fields = {"id": "_id"}
 
     def __repr__(self):
         out = {
@@ -66,3 +66,20 @@ class Room(BaseModel):
             "ruz_id": self.ruz_id,
         }
         return out
+
+
+def room_dict(room) -> dict:
+    return {
+        "id": str(room["_id"]),
+        "name": room["name"],
+        "drive": room["drive"],
+        "calendar": room["calendar"],
+        "tracking_state": room["tracking_state"],
+        "main_source": room["main_source"],
+        "screen_source": room["screen_source"],
+        "sound_source": room["sound_source"],
+        "tracking_source": room["tracking_source"],
+        "auto_control": room["auto_control"],
+        "stream_url": room["stream_url"],
+        "ruz_id": room["ruz_id"],
+    }

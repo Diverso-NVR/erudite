@@ -1,23 +1,22 @@
 from fastapi import APIRouter
 import logging
+from bson.objectid import ObjectId
 
-from db.models import Equipment, Room, db
+from db.models import Equipment, Room, db, room_dict
 
 router = APIRouter()
 
 logger = logging.getLogger("erudite")
 
+rooms_collection = db.get_collection("rooms")
+
 
 @router.get("/room")
 async def list_rooms():
     """Достаем все rooms"""
-    rooms_list = []
-    # try:
 
-    async for room in db.rooms.find():
-        name = room.get("_id")
-        room.pop("_id")
-        room.update({"name": name})
+    rooms_list = []
+    async for room in rooms_collection.find():
         rooms_list.append(room)
     if len(rooms_list) == 0:
         logger.info("No rooms found")
@@ -25,24 +24,23 @@ async def list_rooms():
     else:
         logger.info(f"All rooms in the database: {rooms_list}")
         return rooms_list.__repr__()
-    # except Exception:
-    # logger.error("Wrong data in the database")
 
 
-@router.get("/room/{room_name}")
-async def find_room(room_name: str):
+@router.get("/room/{room_id}")
+async def find_room(room_id: str):
     """Достаем обьект room из бд"""
 
     try:
-        room = await db.rooms.find_one({"_id": room_name})
+        room = await rooms_collection.find_one({"_id": ObjectId(room_id)})
         if room:
-            logger.info(f"Room {room_name}: {Room(**room)}")
-            return Room(**room).__repr__()
+            logger.info(f"Room {room_id}: {room}")
+            return room.__repr__()
         else:
             logger.info("This room is not found")
             return {}
     except Exception:
-        logger.error("Wrong data in the database")
+        logger.error("Wrong ID")
+        return "Wrong ID"
 
 
 @router.post("/room")
