@@ -66,9 +66,10 @@ async def delete_room(room_id: str):
         if await rooms_collection.find_one({"_id": ObjectId(room_id)}):
             await rooms_collection.delete_one({"_id": ObjectId(room_id)})
             logger.info(f"Room: {room_id}  -  deleted from the database")
+            return "done"
         else:
             logger.info(f"Room: {room_id}  -  not found in the database")
-            return "Rooom not found"
+            return "Room not found"
     except Exception:
         logger.error("Wrong ID")
         return "Wrong ID"
@@ -87,7 +88,7 @@ async def patch_room(room_id: str, new_values: dict) -> str:
             return "done"
         else:
             logger.info(f"Room: {room_id}  -  not found in the database")
-            return "Rooom not found"
+            return "Room not found"
     except Exception:
         logger.error("Wrong Id")
         return "Wrong Id"
@@ -108,7 +109,7 @@ async def update_room(room_id: str, new_values: dict) -> str:
             return "done"
         else:
             logger.info(f"Room: {room_id}  -  not found in the database")
-            return "Rooom not found"
+            return "Room not found"
     except Exception:
         logger.error("Wrong Id")
         return "Wrong Id"

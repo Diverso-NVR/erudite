@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from typing import Optional
 import os
 import motor.motor_asyncio
-from bson import ObjectId
 
 
 # Для подключения к внешней БД:
