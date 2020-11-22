@@ -7,23 +7,22 @@ router = APIRouter()
 
 logger = logging.getLogger("erudite")
 
+equipment_collection = db.get_collection("equipment")
+
 
 @router.get("/equipment")
 async def list_equipments():
     """Достаем все equipment"""
 
     equipment_list = []
-    async for equipment in db.equipment.find():
-        equipment_list.append(Equipment(**equipment))
-    try:
-        if len(equipment_list) == 0:
-            logger.info("No items")
-            return {}
-        else:
-            logger.info("Equipment in the database: {equipment_list}")
-            return {"equipment": equipment_list}
-    except Exception:
-        logger.error("Wrong data in the database")
+    async for equipment in equipment_collection.find():
+        equipment_list.append(equipment)
+    if len(equipment_list) == 0:
+        logger.info("No items")
+        return {}
+    else:
+        logger.info(f"Equipment in the database: {equipment_list}")
+        return equipment_list.__repr__()
 
 
 @router.get("/equipment/{equipment_id}")

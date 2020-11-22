@@ -2,7 +2,7 @@ from fastapi import APIRouter
 import logging
 from bson.objectid import ObjectId
 
-from db.models import Equipment, Room, db, room_dict
+from db.models import Room, db
 
 router = APIRouter()
 
