@@ -31,6 +31,8 @@ class Equipment(BaseModel):
     time_editing: Optional[str] = None
     external_id: Optional[str] = None
 
+
+"""
     def __repr__(self):
         out = {
             "ip": self.ip,
@@ -45,7 +47,7 @@ class Equipment(BaseModel):
             "external_id": self.external_id,
         }
         return out
-
+"""
 
 # Класс из бд rooms
 class Room(BaseModel):
@@ -61,6 +63,8 @@ class Room(BaseModel):
     stream_url: Optional[str] = None
     ruz_id: Optional[str] = None
 
+
+"""
     def __repr__(self):
         out = {
             "name": self.name,
@@ -76,3 +80,4 @@ class Room(BaseModel):
             "ruz_id": self.ruz_id,
         }
         return out
+"""

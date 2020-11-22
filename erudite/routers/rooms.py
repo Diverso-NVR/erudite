@@ -120,14 +120,11 @@ async def list_room_equipments(room_id: str):
     """Достаем все equipment из конкретной комнаты"""
 
     equipment_list = []
-    try:
-        async for equipment in db.equipment.find({"room_id": room_id}):
-            equipment_list.append(equipment)
-        if len(equipment_list) == 0:
-            logger.info("No equipment in the room found")
-            return {}
-        else:
-            logger.info(f"Equipment in the room {room_id}: {equipment_list}")
-            return equipment_list
-    except Exception:
-        logger.error("Wrong data in the database")
+    async for equipment in db.equipment.find({"room_id": room_id}):
+        equipment_list.append(equipment)
+    if len(equipment_list) == 0:
+        logger.info("No equipment in the room found")
+        return {}
+    else:
+        logger.info(f"Equipment in the room {room_id}: {equipment_list}")
+        return equipment_list.__repr__()
