@@ -12,10 +12,8 @@ logger = logging.getLogger("erudite")
 async def list_rooms():
     """Достаем все rooms"""
     rooms_list = []
-    # try:
 
     async for room in db.rooms.find():
-        name = room.get("_id")
         rooms_list.append(room)
     if len(rooms_list) == 0:
         logger.info("No rooms found")
@@ -23,8 +21,6 @@ async def list_rooms():
     else:
         logger.info(f"All rooms in the database: {rooms_list}")
         return rooms_list.__repr__()
-    # except Exception:
-    # logger.error("Wrong data in the database")
 
 
 @router.get("/room/{room_name}")

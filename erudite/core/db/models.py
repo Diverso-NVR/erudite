@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from typing import Optional
-import os
 import motor.motor_asyncio
 
 from ..settings import settings
@@ -9,14 +8,13 @@ from ..settings import settings
 client = motor.motor_asyncio.AsyncIOMotorClient(settings.mongo_url)
 
 # Проверка на тест
-TESTING = os.environ.get("TESTING")
+TESTING = settings.testing
 
 # Доступ к БД через motor
 if TESTING:
     db = client["testDb"]
 else:
-    # db = client["erudite"]
-    db = client["Equipment"]  # -  Dev
+    db = client[settings.mongo_db_name]
 
 
 # Класс из бд sources

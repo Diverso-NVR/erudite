@@ -25,6 +25,7 @@ def create_logger(name: str, mode: str = "INFO"):
 class Settings(BaseSettings):
     psql_url: str = Field(..., env="PSQL_DB_URL")
     mongo_url: str = Field(..., env="MONGO_DB_URL")
+    mongo_db_name: str = Field(..., env="MONGO_DB_NAME")
 
     testing: typing.Optional[bool] = Field(env="TESTING")
 
