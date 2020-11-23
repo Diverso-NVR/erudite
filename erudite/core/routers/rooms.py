@@ -2,11 +2,7 @@ from fastapi import APIRouter
 import logging
 from bson.objectid import ObjectId
 
-<<<<<<< HEAD:erudite/routers/rooms.py
-from db.models import Room, db
-=======
 from ..db.models import Equipment, Room, db
->>>>>>> 6534ed106b1543c69471b7934c3393e0fbb42e52:erudite/core/routers/rooms.py
 
 router = APIRouter()
 
