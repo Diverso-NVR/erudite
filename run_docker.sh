@@ -6,5 +6,5 @@ docker run -d \
  --restart on-failure \
  --name nvr_erudite \
  --net=host \
- -p 6010:6010 \
+ -p 6000:6000 \
  nvr_erudite

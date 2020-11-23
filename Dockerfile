@@ -6,8 +6,8 @@ COPY ./.env /
 COPY ./requirements.txt /
 RUN pip install -r requirements.txt
 
-EXPOSE 6010
+EXPOSE 6000
 
 WORKDIR /erudite
 
-CMD ["uvicorn", "main:app", "--port", "6010"]
+CMD ["uvicorn", "main:app", "--port", "6000"]
