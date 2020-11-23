@@ -8,7 +8,7 @@ router = APIRouter()
 logger = logging.getLogger("erudite")
 
 
-@router.get("/equipment")
+@router.get("/equipment/")
 async def list_equipments():
     """Достаем все equipment"""
 
@@ -42,7 +42,7 @@ async def find_equipment(equipment_id: int):
         logger.error("Wrong data in the database")
 
 
-@router.post("/equipment")
+@router.post("/equipment/")
 async def create_equipment(equipment: Equipment):
     """Добавляем обьект equipment в бд"""
 
