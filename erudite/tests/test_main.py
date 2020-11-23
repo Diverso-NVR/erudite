@@ -1,10 +1,10 @@
 from fastapi.testclient import TestClient
-import os
 
-from db.models import Equipment, Room
-from main import app
+from ..core.db.models import Equipment, Room
+from ..core.settings import settings
+from ..main import app
 
-os.environ["TESTING"] = "True"
+settings.testing = True
 
 client = TestClient(app)
 

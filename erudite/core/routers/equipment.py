@@ -2,7 +2,7 @@ from fastapi import APIRouter
 import logging
 from bson.objectid import ObjectId
 
-from db.models import Equipment, db
+from ..db.models import Equipment, db
 
 router = APIRouter()
 
@@ -11,7 +11,7 @@ logger = logging.getLogger("erudite")
 equipment_collection = db.get_collection("equipment")
 
 
-@router.get("/equipment")
+@router.get("/equipment/")
 async def list_equipments():
     """Достаем все equipment"""
 
@@ -43,7 +43,7 @@ async def find_equipment(equipment_id: str):
         return "Wrong ID"
 
 
-@router.post("/equipment")
+@router.post("/equipment/")
 async def create_equipment(equipment: Equipment):
     """Добавляем обьект equipment в бд"""
 

@@ -1,21 +1,20 @@
 from pydantic import BaseModel
 from typing import Optional
-import os
 import motor.motor_asyncio
 
+from ..settings import settings
 
 # Для подключения к внешней БД:
-client = motor.motor_asyncio.AsyncIOMotorClient(os.environ.get("MONGO_DATABASE_URI"))
+client = motor.motor_asyncio.AsyncIOMotorClient(settings.mongo_url)
 
 # Проверка на тест
-TESTING = os.environ.get("TESTING")
+TESTING = settings.testing
 
 # Доступ к БД через motor
 if TESTING:
     db = client["testDb"]
 else:
-    # db = client["erudite"]
-    db = client["Equipment"]  # -  Dev
+    db = client[settings.mongo_db_name]
 
 
 # Класс из бд sources
@@ -31,8 +30,6 @@ class Equipment(BaseModel):
     time_editing: Optional[str] = None
     external_id: Optional[str] = None
 
-
-"""
     def __repr__(self):
         out = {
             "ip": self.ip,
@@ -47,7 +44,7 @@ class Equipment(BaseModel):
             "external_id": self.external_id,
         }
         return out
-"""
+
 
 # Класс из бд rooms
 class Room(BaseModel):
@@ -63,8 +60,6 @@ class Room(BaseModel):
     stream_url: Optional[str] = None
     ruz_id: Optional[str] = None
 
-
-"""
     def __repr__(self):
         out = {
             "name": self.name,
@@ -80,4 +75,3 @@ class Room(BaseModel):
             "ruz_id": self.ruz_id,
         }
         return out
-"""

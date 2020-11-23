@@ -2,7 +2,11 @@ from fastapi import APIRouter
 import logging
 from bson.objectid import ObjectId
 
+<<<<<<< HEAD:erudite/routers/rooms.py
 from db.models import Room, db
+=======
+from ..db.models import Equipment, Room, db
+>>>>>>> 6534ed106b1543c69471b7934c3393e0fbb42e52:erudite/core/routers/rooms.py
 
 router = APIRouter()
 
@@ -11,10 +15,9 @@ logger = logging.getLogger("erudite")
 rooms_collection = db.get_collection("rooms")
 
 
-@router.get("/room")
+@router.get("/rooms/")
 async def list_rooms():
     """Достаем все rooms"""
-
     rooms_list = []
     async for room in rooms_collection.find():
         rooms_list.append(room)
@@ -26,8 +29,8 @@ async def list_rooms():
         return rooms_list.__repr__()
 
 
-@router.get("/room/{room_id}")
-async def find_room(room_id: str):
+@router.get("/rooms/{room_name}")
+async def find_room(room_name: str):
     """Достаем обьект room из бд"""
 
     try:
@@ -43,7 +46,7 @@ async def find_room(room_id: str):
         return "Wrong ID"
 
 
-@router.post("/room")
+@router.post("/rooms/")
 async def create_room(room: Room):
     """Добавляем обьект room в бд"""
 
@@ -58,8 +61,8 @@ async def create_room(room: Room):
         return {"room": new_room.__repr__()}
 
 
-@router.delete("/room/{room_id}")
-async def delete_room(room_id: str):
+@router.delete("/rooms/{room_name}")
+async def delete_room(room_name: str):
     """Удаляем обьект room из бд"""
 
     try:
@@ -75,8 +78,8 @@ async def delete_room(room_id: str):
         return "Wrong ID"
 
 
-@router.patch("/room/{room_id}")
-async def patch_room(room_id: str, new_values: dict) -> str:
+@router.patch("/rooms/{room_name}")
+async def patch_room(room_name: str, new_values_dict: dict):
     """Обновляем/добавляем поле/поля в room в бд"""
 
     try:
@@ -94,8 +97,8 @@ async def patch_room(room_id: str, new_values: dict) -> str:
         return "Wrong Id"
 
 
-@router.put("/room/{room_id}")
-async def update_room(room_id: str, new_values: dict) -> str:
+@router.put("/rooms/{room_name}")
+async def update_room(room_name: str, new_values: Room):
     """Обновляем все поле/поля в room в бд"""
 
     try:
@@ -115,8 +118,8 @@ async def update_room(room_id: str, new_values: dict) -> str:
         return "Wrong Id"
 
 
-@router.get("/room/{room_id}/equipment")
-async def list_room_equipments(room_id: str):
+@router.get("/rooms/{room_name}/equipment")
+async def list_room_equipments(room_name: str):
     """Достаем все equipment из конкретной комнаты"""
 
     equipment_list = []
