@@ -8,7 +8,7 @@ router = APIRouter()
 logger = logging.getLogger("erudite")
 
 
-@router.get("/room")
+@router.get("/rooms/")
 async def list_rooms():
     """Достаем все rooms"""
     rooms_list = []
@@ -23,7 +23,7 @@ async def list_rooms():
         return rooms_list.__repr__()
 
 
-@router.get("/room/{room_name}")
+@router.get("/rooms/{room_name}")
 async def find_room(room_name: str):
     """Достаем обьект room из бд"""
 
@@ -39,7 +39,7 @@ async def find_room(room_name: str):
         logger.error("Wrong data in the database")
 
 
-@router.post("/room")
+@router.post("/rooms/")
 async def create_room(room: Room):
     """Добавляем обьект room в бд"""
 
@@ -52,7 +52,7 @@ async def create_room(room: Room):
     return {"room": room}
 
 
-@router.delete("/room/{room_name}")
+@router.delete("/rooms/{room_name}")
 async def delete_room(room_name: str):
     """Удаляем обьект room из бд"""
 
@@ -60,7 +60,7 @@ async def delete_room(room_name: str):
     logger.info(f"Room: {room_name}  -  deleted from the database")
 
 
-@router.patch("/room/{room_name}")
+@router.patch("/rooms/{room_name}")
 async def patch_room(room_name: str, new_values_dict: dict):
     """Обновляем/добавляем поле/поля в room в бд"""
 
@@ -73,7 +73,7 @@ async def patch_room(room_name: str, new_values_dict: dict):
         logger.error("Element with this name not found")
 
 
-@router.put("/room/{room_name}")
+@router.put("/rooms/{room_name}")
 async def update_room(room_name: str, new_values: Room):
     """Обновляем все поле/поля в room в бд"""
 
@@ -87,7 +87,7 @@ async def update_room(room_name: str, new_values: Room):
     # logger.error("Element with this name not found")
 
 
-@router.get("/room/{room_name}/equipment")
+@router.get("/rooms/{room_name}/equipment")
 async def list_room_equipments(room_name: str):
     """Достаем все equipment из конкретной комнаты"""
 
