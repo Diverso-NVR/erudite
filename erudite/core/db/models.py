@@ -2,11 +2,11 @@ from pydantic import BaseModel
 from typing import Optional
 import os
 import motor.motor_asyncio
-from bson import ObjectId
 
+from ..settings import settings
 
 # Для подключения к внешней БД:
-client = motor.motor_asyncio.AsyncIOMotorClient(os.environ.get("MONGO_DATABASE_URI"))
+client = motor.motor_asyncio.AsyncIOMotorClient(settings.mongo_url)
 
 # Проверка на тест
 TESTING = os.environ.get("TESTING")

@@ -2,5 +2,6 @@ fastapi
 uvicorn
 motor
 pytest
+python-dotenv
 requests
 asyncpg

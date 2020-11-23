@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 import logging
 
-from db.models import Equipment, Room, db
+from ..db.models import Equipment, Room, db
 
 router = APIRouter()
 
@@ -16,8 +16,6 @@ async def list_rooms():
 
     async for room in db.rooms.find():
         name = room.get("_id")
-        room.pop("_id")
-        room.update({"name": name})
         rooms_list.append(room)
     if len(rooms_list) == 0:
         logger.info("No rooms found")

@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 import logging
 
-from db.models import Equipment, db
+from ..db.models import Equipment, db
 
 router = APIRouter()
 
@@ -50,7 +50,9 @@ async def create_equipment(equipment: Equipment):
         await db.equipment.insert_one(equipment.dict(by_alias=True))
         logger.info(f"Equipment with id: {equipment.id}  -  added to the database")
     except Exception:
-        logger.error(f"Equipment with id: {equipment.id}  -  already exists in the database")
+        logger.error(
+            f"Equipment with id: {equipment.id}  -  already exists in the database"
+        )
     return {"equipment": equipment}
 
 
