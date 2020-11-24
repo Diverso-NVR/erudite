@@ -2,7 +2,7 @@ from fastapi import APIRouter
 import logging
 from bson.objectid import ObjectId
 
-from ..db.models import Equipment, Room, db
+from ..db.models import Room, db, mongo_to_dict
 
 router = APIRouter()
 
@@ -14,32 +14,21 @@ rooms_collection = db.get_collection("rooms")
 @router.get("/rooms")
 async def list_rooms():
     """Достаем все rooms"""
-    rooms_list = []
-    async for room in rooms_collection.find():
-        rooms_list.append(room)
-    if len(rooms_list) == 0:
-        logger.info("No rooms found")
-        return {}
-    else:
-        logger.info(f"All rooms in the database: {rooms_list}")
-        return rooms_list.__repr__()
+
+    return [mongo_to_dict(room) async for room in rooms_collection.find()]
 
 
-@router.get("/rooms/{room_name}")
-async def find_room(room_name: str):
+@router.get("/rooms/{room_id}")
+async def find_room(room_id: str):
     """Достаем обьект room из бд"""
 
-    try:
-        room = await rooms_collection.find_one({"_id": ObjectId(room_id)})
-        if room:
-            logger.info(f"Room {room_id}: {room}")
-            return room.__repr__()
-        else:
-            logger.info("This room is not found")
-            return {}
-    except Exception:
-        logger.error("Wrong ID")
-        return "Wrong ID"
+    room = await rooms_collection.find_one({"_id": ObjectId(room_id)})
+    if room:
+        logger.info(f"Room {room_id}: {room}")
+        return mongo_to_dict(room)
+    else:
+        logger.info("This room is not found")
+        return {}
 
 
 @router.post("/rooms")
@@ -54,80 +43,63 @@ async def create_room(room: Room):
         new_room = await rooms_collection.find_one({"_id": room_added.inserted_id})
         logger.info(f"Room: {room.name}  -  added to the database")
 
-        return {"room": new_room.__repr__()}
+        return {"message": mongo_to_dict(new_room)}
 
 
-@router.delete("/rooms/{room_name}")
-async def delete_room(room_name: str):
+@router.delete("/rooms/{room_id}")
+async def delete_room(room_id: str):
     """Удаляем обьект room из бд"""
 
-    try:
-        if await rooms_collection.find_one({"_id": ObjectId(room_id)}):
-            await rooms_collection.delete_one({"_id": ObjectId(room_id)})
-            logger.info(f"Room: {room_id}  -  deleted from the database")
-            return "done"
-        else:
-            logger.info(f"Room: {room_id}  -  not found in the database")
-            return "Room not found"
-    except Exception:
-        logger.error("Wrong ID")
-        return "Wrong ID"
+    if await rooms_collection.find_one({"_id": ObjectId(room_id)}):
+        await rooms_collection.delete_one({"_id": ObjectId(room_id)})
+        logger.info(f"Room: {room_id}  -  deleted from the database")
+        return "done"
+    else:
+        logger.info(f"Room: {room_id}  -  not found in the database")
+        return "Room not found"
 
 
-@router.patch("/rooms/{room_name}")
-async def patch_room(room_name: str, new_values_dict: dict):
+@router.patch("/rooms/{room_id}")
+async def patch_room(room_id: str, new_values: dict):
     """Обновляем/добавляем поле/поля в room в бд"""
 
-    try:
-        if await rooms_collection.find_one({"_id": ObjectId(room_id)}):
-            await rooms_collection.update_one(
-                {"_id": ObjectId(room_id)}, {"$set": new_values}
-            )
-            logger.info(
-                f"Room: {room_id}  -  pached"
-            )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
-            return "done"
-        else:
-            logger.info(f"Room: {room_id}  -  not found in the database")
-            return "Room not found"
-    except Exception:
-        logger.error("Wrong Id")
-        return "Wrong Id"
+    if await rooms_collection.find_one({"_id": ObjectId(room_id)}):
+        await rooms_collection.update_one(
+            {"_id": ObjectId(room_id)}, {"$set": new_values}
+        )
+        logger.info(
+            f"Room: {room_id}  -  pached"
+        )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+        return "done"
+    else:
+        logger.info(f"Room: {room_id}  -  not found in the database")
+        return "Room not found"
 
 
-@router.put("/rooms/{room_name}")
-async def update_room(room_name: str, new_values: Room):
+@router.put("/rooms/{room_id}")
+async def update_room(room_id: str, new_values: Room):
     """Обновляем все поле/поля в room в бд"""
 
-    try:
-        if await rooms_collection.find_one({"_id": ObjectId(room_id)}):
-            await rooms_collection.delete_one({"_id": ObjectId(room_id)})
-            await rooms_collection.insert_one({"_id": ObjectId(room_id)})
-            await rooms_collection.update_one(
-                {"_id": ObjectId(room_id)}, {"$set": new_values}
-            )
-            logger.info(
-                f"Room: {room_id}  -  updated"
-            )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
-            return "done"
-        else:
-            logger.info(f"Room: {room_id}  -  not found in the database")
-            return "Room not found"
-    except Exception:
-        logger.error("Wrong Id")
-        return "Wrong Id"
+    if await rooms_collection.find_one({"_id": ObjectId(room_id)}):
+        await rooms_collection.delete_one({"_id": ObjectId(room_id)})
+        await rooms_collection.insert_one({"_id": ObjectId(room_id)})
+        await rooms_collection.update_one(
+            {"_id": ObjectId(room_id)}, {"$set": new_values}
+        )
+        logger.info(
+            f"Room: {room_id}  -  updated"
+        )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+        return "done"
+    else:
+        logger.info(f"Room: {room_id}  -  not found in the database")
+        return "Room not found"
 
 
-@router.get("/rooms/{room_name}/equipment")
-async def list_room_equipments(room_name: str):
+@router.get("/rooms/{room_id}/equipment")
+async def list_room_equipments(room_id: str):
     """Достаем все equipment из конкретной комнаты"""
 
-    equipment_list = []
-    async for equipment in db.equipment.find({"room_id": room_id}):
-        equipment_list.append(equipment)
-    if len(equipment_list) == 0:
-        logger.info("No equipment in the room found")
-        return {}
-    else:
-        logger.info(f"Equipment in the room {room_id}: {equipment_list}")
-        return equipment_list.__repr__()
+    return [
+        mongo_to_dict(equipment)
+        async for equipment in db.equipment.find({"room_id": room_id})
+    ]

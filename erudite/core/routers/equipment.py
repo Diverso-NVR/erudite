@@ -2,7 +2,7 @@ from fastapi import APIRouter
 import logging
 from bson.objectid import ObjectId
 
-from ..db.models import Equipment, db
+from ..db.models import Equipment, db, mongo_to_dict
 
 router = APIRouter()
 
@@ -15,32 +15,20 @@ equipment_collection = db.get_collection("equipment")
 async def list_equipments():
     """Достаем все equipment"""
 
-    equipment_list = []
-    async for equipment in equipment_collection.find():
-        equipment_list.append(equipment)
-    if len(equipment_list) == 0:
-        logger.info("No items")
-        return {}
-    else:
-        logger.info(f"Equipment in the database: {equipment_list}")
-        return equipment_list.__repr__()
+    return [mongo_to_dict(equipment) async for equipment in equipment_collection.find()]
 
 
 @router.get("/equipment/{equipment_id}")
 async def find_equipment(equipment_id: str):
     """Достаем обьект equipment из бд"""
 
-    try:
-        equipment = await equipment_collection.find_one({"_id": ObjectId(equipment_id)})
-        if equipment:
-            logger.info(f"Equipment {equipment_id}: {equipment}")
-            return equipment.__repr__()
-        else:
-            logger.info("This equipment is not found")
-            return {}
-    except Exception:
-        logger.error("Wrong ID")
-        return "Wrong ID"
+    equipment = await equipment_collection.find_one({"_id": ObjectId(equipment_id)})
+    if equipment:
+        logger.info(f"Equipment {equipment_id}: {equipment}")
+        return mongo_to_dict(equipment)
+    else:
+        logger.info("This equipment is not found")
+        return {}
 
 
 @router.post("/equipment")
@@ -55,65 +43,53 @@ async def create_equipment(equipment: Equipment):
     )
     logger.info(f"Equipment: {equipment.name}  -  added to the database")
 
-    return {"equipment": new_equipment.__repr__()}
+    return {"equipment": mongo_to_dict(new_equipment)}
 
 
 @router.delete("/equipment/{equipment_id}")
 async def delete_equipment(equipment_id: str):
     """Удаляем обьект equipment из бд"""
 
-    try:
-        if await equipment_collection.find_one({"_id": ObjectId(equipment_id)}):
-            await equipment_collection.delete_one({"_id": ObjectId(equipment_id)})
-            logger.info(f"Equipment: {equipment_id}  -  deleted from the database")
-            return "done"
-        else:
-            logger.info(f"Equipment: {equipment_id}  -  not found in the database")
-            return "Equipment not found"
-    except Exception:
-        logger.error("Wrong ID")
-        return "Wrong ID"
+    if await equipment_collection.find_one({"_id": ObjectId(equipment_id)}):
+        await equipment_collection.delete_one({"_id": ObjectId(equipment_id)})
+        logger.info(f"Equipment: {equipment_id}  -  deleted from the database")
+        return "done"
+    else:
+        logger.info(f"Equipment: {equipment_id}  -  not found in the database")
+        return "Equipment not found"
 
 
 @router.patch("/equipment/{equipment_id}")
 async def patch_equipment(equipment_id: str, new_values: dict) -> str:
     """Обновляем/добавляем поле/поля в equipment в бд"""
 
-    try:
-        if await equipment_collection.find_one({"_id": ObjectId(equipment_id)}):
-            await equipment_collection.update_one(
-                {"_id": ObjectId(equipment_id)}, {"$set": new_values}
-            )
-            logger.info(
-                f"Equipment: {equipment_id}  -  pached"
-            )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
-            return "done"
-        else:
-            logger.info(f"Equipment: {equipment_id}  -  not found in the database")
-            return "Equipment not found"
-    except Exception:
-        logger.error("Wrong Id")
-        return "Wrong Id"
+    if await equipment_collection.find_one({"_id": ObjectId(equipment_id)}):
+        await equipment_collection.update_one(
+            {"_id": ObjectId(equipment_id)}, {"$set": new_values}
+        )
+        logger.info(
+            f"Equipment: {equipment_id}  -  pached"
+        )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+        return "done"
+    else:
+        logger.info(f"Equipment: {equipment_id}  -  not found in the database")
+        return "Equipment not found"
 
 
 @router.put("/equipment/{equipment_id}")
 async def update_equipment(equipment_id: str, new_values: dict):
     """Обновляем/добавляем поле/поля в equipment в бд"""
 
-    try:
-        if await equipment_collection.find_one({"_id": ObjectId(equipment_id)}):
-            await equipment_collection.delete_one({"_id": ObjectId(equipment_id)})
-            await equipment_collection.insert_one({"_id": ObjectId(equipment_id)})
-            await equipment_collection.update_one(
-                {"_id": ObjectId(equipment_id)}, {"$set": new_values}
-            )
-            logger.info(
-                f"Equipment: {equipment_id}  -  updated"
-            )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
-            return "done"
-        else:
-            logger.info(f"Equipment: {equipment_id}  -  not found in the database")
-            return "Equipment not found"
-    except Exception:
-        logger.error("Wrong Id")
-        return "Wrong Id"
+    if await equipment_collection.find_one({"_id": ObjectId(equipment_id)}):
+        await equipment_collection.delete_one({"_id": ObjectId(equipment_id)})
+        await equipment_collection.insert_one({"_id": ObjectId(equipment_id)})
+        await equipment_collection.update_one(
+            {"_id": ObjectId(equipment_id)}, {"$set": new_values}
+        )
+        logger.info(
+            f"Equipment: {equipment_id}  -  updated"
+        )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+        return "done"
+    else:
+        logger.info(f"Equipment: {equipment_id}  -  not found in the database")
+        return "Equipment not found"

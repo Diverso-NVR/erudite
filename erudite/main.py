@@ -13,15 +13,15 @@ def create_app():
 
     from core.routers.rooms import router as room_router
     from core.routers.equipment import router as equipment_router
+    from core.routers.disciplines import router as discipline_router
 
     app.include_router(room_router)
     app.include_router(equipment_router)
+    app.include_router(discipline_router)
 
     from core.middleware import authorization
 
-    app.add_middleware(
-        BaseHTTPMiddleware, dispatch=authorization
-    )  # применяется ко всем запросам
+    app.add_middleware(BaseHTTPMiddleware, dispatch=authorization)
 
     return app
 
