@@ -11,7 +11,7 @@ logger = logging.getLogger("erudite")
 equipment_collection = db.get_collection("equipment")
 
 
-@router.get("/equipment/")
+@router.get("/equipment")
 async def list_equipments():
     """Достаем все equipment"""
 
@@ -43,12 +43,16 @@ async def find_equipment(equipment_id: str):
         return "Wrong ID"
 
 
-@router.post("/equipment/")
+@router.post("/equipment")
 async def create_equipment(equipment: Equipment):
     """Добавляем обьект equipment в бд"""
 
-    equipment_added = await equipment_collection.insert_one(equipment.dict(by_alias=True))
-    new_equipment = await equipment_collection.find_one({"_id": equipment_added.inserted_id})
+    equipment_added = await equipment_collection.insert_one(
+        equipment.dict(by_alias=True)
+    )
+    new_equipment = await equipment_collection.find_one(
+        {"_id": equipment_added.inserted_id}
+    )
     logger.info(f"Equipment: {equipment.name}  -  added to the database")
 
     return {"equipment": new_equipment.__repr__()}
@@ -77,7 +81,9 @@ async def patch_equipment(equipment_id: str, new_values: dict) -> str:
 
     try:
         if await equipment_collection.find_one({"_id": ObjectId(equipment_id)}):
-            await equipment_collection.update_one({"_id": ObjectId(equipment_id)}, {"$set": new_values})
+            await equipment_collection.update_one(
+                {"_id": ObjectId(equipment_id)}, {"$set": new_values}
+            )
             logger.info(
                 f"Equipment: {equipment_id}  -  pached"
             )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
@@ -98,7 +104,9 @@ async def update_equipment(equipment_id: str, new_values: dict):
         if await equipment_collection.find_one({"_id": ObjectId(equipment_id)}):
             await equipment_collection.delete_one({"_id": ObjectId(equipment_id)})
             await equipment_collection.insert_one({"_id": ObjectId(equipment_id)})
-            await equipment_collection.update_one({"_id": ObjectId(equipment_id)}, {"$set": new_values})
+            await equipment_collection.update_one(
+                {"_id": ObjectId(equipment_id)}, {"$set": new_values}
+            )
             logger.info(
                 f"Equipment: {equipment_id}  -  updated"
             )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту

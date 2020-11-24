@@ -1,4 +1,6 @@
 from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.openapi.utils import get_openapi
+
 from core.settings import create_logger
 
 
@@ -7,7 +9,7 @@ def create_app():
 
     from fastapi import FastAPI
 
-    app = FastAPI()
+    app = FastAPI(root_path="/api/erudite")
 
     from core.routers.rooms import router as room_router
     from core.routers.equipment import router as equipment_router
@@ -25,6 +27,28 @@ def create_app():
 
 
 app = create_app()
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    openapi_schema = get_openapi(
+        title="Erudite",
+        version="1.0.0",
+        description="Erudite – db of rooms, equipment, disciplines and stuff in MIEM. Kinda Google AdminSDK",
+        routes=app.routes,
+    )
+    openapi_schema["info"]["x-logo"] = {
+        "url": "https://avatars2.githubusercontent.com/u/64712541"
+    }
+
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
+
 
 if __name__ == "__main__":
     import uvicorn

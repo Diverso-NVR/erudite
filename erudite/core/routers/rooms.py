@@ -11,7 +11,7 @@ logger = logging.getLogger("erudite")
 rooms_collection = db.get_collection("rooms")
 
 
-@router.get("/rooms/")
+@router.get("/rooms")
 async def list_rooms():
     """Достаем все rooms"""
     rooms_list = []
@@ -42,7 +42,7 @@ async def find_room(room_name: str):
         return "Wrong ID"
 
 
-@router.post("/rooms/")
+@router.post("/rooms")
 async def create_room(room: Room):
     """Добавляем обьект room в бд"""
 
@@ -80,7 +80,9 @@ async def patch_room(room_name: str, new_values_dict: dict):
 
     try:
         if await rooms_collection.find_one({"_id": ObjectId(room_id)}):
-            await rooms_collection.update_one({"_id": ObjectId(room_id)}, {"$set": new_values})
+            await rooms_collection.update_one(
+                {"_id": ObjectId(room_id)}, {"$set": new_values}
+            )
             logger.info(
                 f"Room: {room_id}  -  pached"
             )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
@@ -101,7 +103,9 @@ async def update_room(room_name: str, new_values: Room):
         if await rooms_collection.find_one({"_id": ObjectId(room_id)}):
             await rooms_collection.delete_one({"_id": ObjectId(room_id)})
             await rooms_collection.insert_one({"_id": ObjectId(room_id)})
-            await rooms_collection.update_one({"_id": ObjectId(room_id)}, {"$set": new_values})
+            await rooms_collection.update_one(
+                {"_id": ObjectId(room_id)}, {"$set": new_values}
+            )
             logger.info(
                 f"Room: {room_id}  -  updated"
             )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту

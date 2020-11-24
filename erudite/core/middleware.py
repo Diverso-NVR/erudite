@@ -22,7 +22,11 @@ async def db_connect():
 
 
 async def authorization(request: Request, call_next):
-    if request.url.path in ["/docs", "/redoc", "/openapi.json"]:
+    if request.url.path in [
+        "/api/erudite/docs",
+        "/api/erudite/redoc",
+        "/api/erudite/openapi.json",
+    ]:
         return await call_next(request)
 
     api_key = request.headers.get("key")
