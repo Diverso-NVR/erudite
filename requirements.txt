@@ -5,4 +5,4 @@ pytest
 python-dotenv
 requests
 asyncpg
-bson
+pymongo
