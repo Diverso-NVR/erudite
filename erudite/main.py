@@ -1,4 +1,5 @@
 from starlette.middleware.base import BaseHTTPMiddleware
+
 from fastapi.openapi.utils import get_openapi
 
 from core.settings import create_logger
@@ -39,16 +40,13 @@ def custom_openapi():
         description="Erudite – db of rooms, equipment, disciplines and stuff in MIEM. Kinda Google AdminSDK",
         routes=app.routes,
     )
-    openapi_schema["info"]["x-logo"] = {
-        "url": "https://avatars2.githubusercontent.com/u/64712541"
-    }
+    openapi_schema["info"]["x-logo"] = {"url": "https://avatars2.githubusercontent.com/u/64712541"}
 
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
 
 app.openapi = custom_openapi
-
 
 if __name__ == "__main__":
     import uvicorn

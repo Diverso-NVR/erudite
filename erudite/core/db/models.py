@@ -38,5 +38,17 @@ class Discipline(BaseModel):
     emails: List[str] = Field(...)
 
 
+def ResponseModel(data, message):
+    return {
+        "data": [data],
+        "code": 200,
+        "message": message,
+    }
+
+
+def ErrorResponseModel(error, code, message):
+    return {"error": error, "code": code, "message": message}
+
+
 def mongo_to_dict(obj):
     return {**obj, "_id": str(obj["_id"])}

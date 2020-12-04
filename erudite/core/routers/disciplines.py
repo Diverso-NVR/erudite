@@ -13,15 +13,12 @@ logger = logging.getLogger("erudite")
 disciplines_collection = db.get_collection("disciplines")
 
 
-@router.get("/disciplines")
+@router.get("/disciplines", tags=["disciplines"])
 async def find_discipline(course_code: Optional[str] = None):
     """Достаем обьект discipline из бд"""
 
     if course_code is None:
-        return [
-            mongo_to_dict(discipline)
-            async for discipline in disciplines_collection.find()
-        ]
+        return [mongo_to_dict(discipline) async for discipline in disciplines_collection.find()]
 
     discipline = await disciplines_collection.find_one({"course_code": course_code})
     if discipline:
@@ -32,7 +29,7 @@ async def find_discipline(course_code: Optional[str] = None):
         return {}
 
 
-@router.get("/disciplines/{discipline_id}")
+@router.get("/disciplines/{discipline_id}", tags=["disciplines"])
 async def find_discipline(discipline_id: str):
     """Достаем обьект discipline из бд"""
 
@@ -45,19 +42,13 @@ async def find_discipline(discipline_id: str):
         return {}
 
 
-@router.post("/disciplines", status_code=201)
+@router.post("/disciplines", status_code=201, tags=["disciplines"])
 async def add_discipline(discipline: Discipline):
     if await disciplines_collection.find_one({"course_code": discipline.course_code}):
-        logger.info(
-            f"Discipline with code: {discipline.course_code}  -  already exists in the database"
-        )
+        logger.info(f"Discipline with code: {discipline.course_code}  -  already exists in the database")
         return {}
 
-    discipline_added = await disciplines_collection.insert_one(
-        discipline.dict(by_alias=True)
-    )
-    new_discipline = await disciplines_collection.find_one(
-        {"_id": discipline_added.inserted_id}
-    )
+    discipline_added = await disciplines_collection.insert_one(discipline.dict(by_alias=True))
+    new_discipline = await disciplines_collection.find_one({"_id": discipline_added.inserted_id})
 
     return {"message": "Discipline added", "discipline": mongo_to_dict(new_discipline)}
