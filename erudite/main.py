@@ -11,10 +11,11 @@ def create_app():
     from fastapi import FastAPI
 
     app = FastAPI(root_path="/api/erudite")
+    # app = FastAPI()
 
-    from core.routers.rooms import router as room_router
-    from core.routers.equipment import router as equipment_router
-    from core.routers.disciplines import router as discipline_router
+    from core.routes.rooms import router as room_router
+    from core.routes.equipment import router as equipment_router
+    from core.routes.disciplines import router as discipline_router
 
     app.include_router(room_router)
     app.include_router(equipment_router)
