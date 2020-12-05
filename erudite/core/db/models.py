@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 import motor.motor_asyncio
+from fastapi.responses import JSONResponse
 
 from ..settings import settings
 
@@ -29,7 +30,6 @@ class Equipment(BaseModel):
 # Класс из бд rooms
 class Room(BaseModel):
     name: Optional[str] = Field()
-    ruz_id: Optional[str] = Field()
 
 
 class Discipline(BaseModel):
@@ -39,15 +39,11 @@ class Discipline(BaseModel):
 
 
 def ResponseModel(data, message):
-    return {
-        "data": [data],
-        "code": 200,
-        "message": message,
-    }
+    return JSONResponse(status_code=200, content={"data": data, "message": message})
 
 
-def ErrorResponseModel(error, code, message):
-    return {"error": error, "code": code, "message": message}
+def ErrorResponseModel(code, message):
+    return JSONResponse(status_code=code, content={"message": message})
 
 
 def mongo_to_dict(obj):

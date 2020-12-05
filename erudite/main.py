@@ -10,8 +10,8 @@ def create_app():
 
     from fastapi import FastAPI
 
-    app = FastAPI(root_path="/api/erudite")
-    # app = FastAPI()
+    # app = FastAPI(root_path="/api/erudite")
+    app = FastAPI()
 
     from core.routes.rooms import router as room_router
     from core.routes.equipment import router as equipment_router
@@ -21,14 +21,20 @@ def create_app():
     app.include_router(equipment_router)
     app.include_router(discipline_router)
 
-    from core.middleware import authorization
+    # DEVELOPER
+    # from core.middleware import authorization
 
-    app.add_middleware(BaseHTTPMiddleware, dispatch=authorization)
+    # app.add_middleware(BaseHTTPMiddleware, dispatch=authorization)
 
     return app
 
 
 app = create_app()
+
+
+@app.get("/", tags=["Root"], summary="Root", description="Welcome to Erudite!")
+async def read_root():
+    return {"message": "Welcome to Erudite!"}
 
 
 def custom_openapi():
