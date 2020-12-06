@@ -2,7 +2,15 @@ from fastapi import APIRouter, Response, status
 import logging
 from bson.objectid import ObjectId
 
-from ..db.models import Room, db, mongo_to_dict, ErrorResponseModel, ResponseModel, mongo_to_dict_no_id, Response
+from ..db.models import (
+    Room,
+    db,
+    mongo_to_dict,
+    ErrorResponseModel,
+    ResponseModel,
+    Response,
+    check_ObjectId,
+)
 
 router = APIRouter()
 
@@ -37,22 +45,21 @@ async def find_room(room_id: str):
     """Достаем обьект room из бд"""
 
     # Проверка на правильность ObjectId
-    try:
-        id = ObjectId(room_id)
-    except:
-        message = "ObjectId is written in the wrong format"
-        logger.info(message)
-        return ErrorResponseModel(400, message)
+    id = check_ObjectId(room_id)
 
-    # Проверка на наличие правилно введенного ObjectId в БД
-    room = await rooms_collection.find_one({"_id": id})
-    if room:
-        logger.info(f"Room {room_id}: {room}")
-        return ResponseModel(200, mongo_to_dict(room), "Room returned successfully")
+    if id:
+        # Проверка на наличие правилно введенного ObjectId в БД
+        room = await rooms_collection.find_one({"_id": id})
+        if room:
+            logger.info(f"Room {room_id}: {room}")
+            return ResponseModel(200, mongo_to_dict(room), "Room returned successfully")
+        else:
+            message = "This room is not found"
+            logger.info(message)
+            return ErrorResponseModel(404, message)
     else:
-        message = "This room is not found"
-        logger.info(message)
-        return ErrorResponseModel(404, message)
+        message = "ObjectId is written in the wrong format"
+        return ErrorResponseModel(400, message)
 
 
 @router.post(
@@ -87,22 +94,21 @@ async def delete_room(room_id: str):
     """Удаляем обьект room из бд"""
 
     # Проверка на правильность ObjectId
-    try:
-        id = ObjectId(room_id)
-    except:
-        message = "ObjectId is written in the wrong format"
-        logger.info(message)
-        return ErrorResponseModel(400, message)
+    id = check_ObjectId(room_id)
 
-    if await rooms_collection.find_one({"_id": id}):
-        await rooms_collection.delete_one({"_id": id})
-        message = f"Room: {room_id}  -  deleted from the database"
-        logger.info(message)
-        return ResponseModel(200, message, "Room deleted successfully")
+    if id:
+        if await rooms_collection.find_one({"_id": id}):
+            await rooms_collection.delete_one({"_id": id})
+            message = f"Room: {room_id}  -  deleted from the database"
+            logger.info(message)
+            return ResponseModel(200, message, "Room deleted successfully")
+        else:
+            message = f"Room: {room_id}  -  not found in the database"
+            logger.info(message)
+            return ErrorResponseModel(404, message)
     else:
-        message = f"Room: {room_id}  -  not found in the database"
-        logger.info(message)
-        return ErrorResponseModel(404, message)
+        message = "ObjectId is written in the wrong format"
+        return ErrorResponseModel(400, message)
 
 
 @router.patch(
@@ -116,22 +122,23 @@ async def patch_room(room_id: str, new_values: dict):
     """Обновляем необязательные поля в room в бд"""
 
     # Проверка на правильность ObjectId
-    try:
-        id = ObjectId(room_id)
-    except:
-        message = "ObjectId is written in the wrong format"
-        logger.info(message)
-        return ErrorResponseModel(400, message)
+    id = check_ObjectId(room_id)
 
-    if await rooms_collection.find_one({"_id": id}):
-        await rooms_collection.update_one({"_id": id}, {"$set": {"additional": new_values}})
-        message = f"Room: {room_id}  -  pached"
-        logger.info(message)  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
-        return ResponseModel(200, message, "Room patched successfully")
+    if id:
+        if await rooms_collection.find_one({"_id": id}):
+            await rooms_collection.update_one({"_id": id}, {"$set": {"additional": new_values}})
+            message = f"Room: {room_id}  -  pached"
+            logger.info(
+                message
+            )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+            return ResponseModel(200, message, "Room patched successfully")
+        else:
+            message = f"Room: {room_id}  -  not found in the database"
+            logger.info(message)
+            return ErrorResponseModel(404, message)
     else:
-        message = f"Room: {room_id}  -  not found in the database"
-        logger.info(message)
-        return ErrorResponseModel(404, message)
+        message = "ObjectId is written in the wrong format"
+        return ErrorResponseModel(400, message)
 
 
 @router.put(
@@ -145,26 +152,27 @@ async def update_room(room_id: str, new_values: Room):
     """Обновляем все поле/поля в room в бд"""
 
     # Проверка на правильность ObjectId
-    try:
-        id = ObjectId(room_id)
-    except:
-        message = "ObjectId is written in the wrong format"
-        logger.info(message)
-        return ErrorResponseModel(400, message)
+    id = check_ObjectId(room_id)
 
-    if await rooms_collection.find_one({"_id": id}):
-        await rooms_collection.delete_one({"_id": id})
-        await rooms_collection.insert_one({"_id": id})
-        await rooms_collection.update_one(
-            {"_id": id}, {"$set": {"name": new_values.name, "additional": mongo_to_dict_no_id(new_values.additional)}}
-        )
-        message = f"Room: {room_id}  -  updated"
-        logger.info(message)  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
-        return ResponseModel(200, message, "Room updated successfully")
+    if id:
+        if await rooms_collection.find_one({"_id": id}):
+            await rooms_collection.delete_one({"_id": id})
+            await rooms_collection.insert_one({"_id": id})
+            await rooms_collection.update_one(
+                {"_id": id}, {"$set": {"name": new_values.name, "additional": mongo_to_dict(new_values.additional)}}
+            )
+            message = f"Room: {room_id}  -  updated"
+            logger.info(
+                message
+            )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+            return ResponseModel(200, message, "Room updated successfully")
+        else:
+            message = f"Room: {room_id}  -  not found in the database"
+            logger.info(message)
+            return ErrorResponseModel(404, message)
     else:
-        message = f"Room: {room_id}  -  not found in the database"
-        logger.info(message)
-        return ErrorResponseModel(404, message)
+        message = "ObjectId is written in the wrong format"
+        return ErrorResponseModel(400, message)
 
 
 @router.get(
@@ -178,20 +186,19 @@ async def list_room_equipments(room_id: str):
     """Достаем все equipment из конкретной комнаты"""
 
     # Проверка на правильность ObjectId
-    try:
-        id = ObjectId(room_id)
-    except:
-        message = "ObjectId is written in the wrong format"
-        logger.info(message)
-        return ErrorResponseModel(400, message)
+    id = check_ObjectId(room_id)
 
-    room = await rooms_collection.find_one({"_id": id})
-    if room:
-        data = [
-            mongo_to_dict(equipment) async for equipment in db.equipment.find({"additional": {"room_id": room_id}})
-        ]
-        return ResponseModel(200, data, "Room updated successfully")
+    if id:
+        room = await rooms_collection.find_one({"_id": id})
+        if room:
+            data = [
+                mongo_to_dict(equipment) async for equipment in db.equipment.find({"additional": {"room_id": room_id}})
+            ]
+            return ResponseModel(200, data, "Room updated successfully")
+        else:
+            message = "This room is not found"
+            logger.info(message)
+            return ErrorResponseModel(404, message)
     else:
-        message = "This room is not found"
-        logger.info(message)
-        return ErrorResponseModel(404, message)
+        message = "ObjectId is written in the wrong format"
+        return ErrorResponseModel(400, message)
