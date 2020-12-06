@@ -1,12 +1,12 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Dict
 import motor.motor_asyncio
 from fastapi.responses import JSONResponse
 
 from ..settings import settings
 
 # Для подключения к внешней БД:
-client = motor.motor_asyncio.AsyncIOMotorClient(settings.mongo_url)
+client = motor.motor_asyncio.AsyncIOMotorClient("localhost", 27017)  # settings.mongo_url)
 
 # Проверка на тест
 TESTING = settings.testing
@@ -29,7 +29,8 @@ class Equipment(BaseModel):
 
 # Класс из бд rooms
 class Room(BaseModel):
-    name: Optional[str] = Field()
+    name: str
+    additional: Dict[str, str] = Field(...)
 
 
 class Discipline(BaseModel):
@@ -38,8 +39,13 @@ class Discipline(BaseModel):
     emails: List[str] = Field(...)
 
 
-def ResponseModel(data, message):
-    return JSONResponse(status_code=200, content={"data": data, "message": message})
+class Response(BaseModel):
+    data: list
+    message: str
+
+
+def ResponseModel(code, data, message):
+    return JSONResponse(status_code=code, content={"data": data, "message": message})
 
 
 def ErrorResponseModel(code, message):
@@ -48,3 +54,7 @@ def ErrorResponseModel(code, message):
 
 def mongo_to_dict(obj):
     return {**obj, "_id": str(obj["_id"])}
+
+
+def mongo_to_dict_no_id(obj):
+    return {**obj}

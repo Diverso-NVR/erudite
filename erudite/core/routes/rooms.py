@@ -2,7 +2,7 @@ from fastapi import APIRouter, Response, status
 import logging
 from bson.objectid import ObjectId
 
-from ..db.models import Room, db, mongo_to_dict, ErrorResponseModel, ResponseModel
+from ..db.models import Room, db, mongo_to_dict, ErrorResponseModel, ResponseModel, mongo_to_dict_no_id, Response
 
 router = APIRouter()
 
@@ -11,15 +11,27 @@ logger = logging.getLogger("erudite")
 rooms_collection = db.get_collection("rooms")
 
 
-@router.get("/rooms", tags=["rooms"], summary="Get all rooms", description="Get a list of all rooms in the database")
+@router.get(
+    "/rooms",
+    tags=["rooms"],
+    summary="Get all rooms",
+    description="Get a list of all rooms in the database",
+    response_model=Response,
+)
 async def list_rooms():
     """Достаем все rooms"""
 
-    return ResponseModel([mongo_to_dict(room) async for room in rooms_collection.find()])
+    return ResponseModel(
+        200, [mongo_to_dict(room) async for room in rooms_collection.find()], "Rooms returned successfully"
+    )
 
 
 @router.get(
-    "/rooms/{room_id}", tags=["rooms"], summary="Get a room", description="Get a room specified by it's ObjectId"
+    "/rooms/{room_id}",
+    tags=["rooms"],
+    summary="Get a room",
+    description="Get a room specified by it's ObjectId",
+    response_model=Response,
 )
 async def find_room(room_id: str):
     """Достаем обьект room из бд"""
@@ -36,14 +48,20 @@ async def find_room(room_id: str):
     room = await rooms_collection.find_one({"_id": id})
     if room:
         logger.info(f"Room {room_id}: {room}")
-        return ResponseModel(mongo_to_dict(room))
+        return ResponseModel(200, mongo_to_dict(room), "Room returned successfully")
     else:
         message = "This room is not found"
         logger.info(message)
         return ErrorResponseModel(404, message)
 
 
-@router.post("/rooms", tags=["rooms"], summary="Create room", description="Create room specified by it's ObjectId")
+@router.post(
+    "/rooms",
+    tags=["rooms"],
+    summary="Create room",
+    description="Create room specified by it's ObjectId",
+    response_model=Response,
+)
 async def create_room(room: Room):
     """Добавляем обьект room в бд"""
 
@@ -55,12 +73,15 @@ async def create_room(room: Room):
         room_added = await rooms_collection.insert_one(room.dict(by_alias=True))
         new_room = await rooms_collection.find_one({"_id": room_added.inserted_id})
         logger.info(f"Room: {room.name}  -  added to the database")
-
-        return ResponseModel(mongo_to_dict(new_room))
+        return ResponseModel(201, mongo_to_dict(new_room), "Room added successfully")
 
 
 @router.delete(
-    "/rooms/{room_id}", tags=["rooms"], summary="Delete room", description="Delete room specified by it's ObjectId"
+    "/rooms/{room_id}",
+    tags=["rooms"],
+    summary="Delete room",
+    description="Delete room specified by it's ObjectId",
+    response_model=Response,
 )
 async def delete_room(room_id: str):
     """Удаляем обьект room из бд"""
@@ -75,11 +96,13 @@ async def delete_room(room_id: str):
 
     if await rooms_collection.find_one({"_id": id}):
         await rooms_collection.delete_one({"_id": id})
-        logger.info(f"Room: {room_id}  -  deleted from the database")
-        return "done"
+        message = f"Room: {room_id}  -  deleted from the database"
+        logger.info(message)
+        return ResponseModel(200, message, "Room deleted successfully")
     else:
-        logger.info(f"Room: {room_id}  -  not found in the database")
-        return "Room not found"
+        message = f"Room: {room_id}  -  not found in the database"
+        logger.info(message)
+        return ErrorResponseModel(404, message)
 
 
 @router.patch(
@@ -87,6 +110,7 @@ async def delete_room(room_id: str):
     tags=["rooms"],
     summary="Patch room",
     description="Changes/adds atributes of room specified by it's ObjectId",
+    response_model=Response,
 )
 async def patch_room(room_id: str, new_values: dict):
     """Обновляем/добавляем поле/поля в room в бд"""
@@ -100,14 +124,14 @@ async def patch_room(room_id: str, new_values: dict):
         return ErrorResponseModel(400, message)
 
     if await rooms_collection.find_one({"_id": id}):
-        await rooms_collection.update_one({"_id": id}, {"$set": new_values})
-        logger.info(
-            f"Room: {room_id}  -  pached"
-        )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
-        return "done"
+        await rooms_collection.update_one({"_id": id}, {"$set": {"additional": new_values}})
+        message = f"Room: {room_id}  -  pached"
+        logger.info(message)  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+        return ResponseModel(200, message, "Room patched successfully")
     else:
-        logger.info(f"Room: {room_id}  -  not found in the database")
-        return "Room not found"
+        message = f"Room: {room_id}  -  not found in the database"
+        logger.info(message)
+        return ErrorResponseModel(404, message)
 
 
 @router.put(
@@ -115,6 +139,7 @@ async def patch_room(room_id: str, new_values: dict):
     tags=["rooms"],
     summary="Updates room",
     description="Deletes old atributes of room specified by it's ObjectId and puts in new ones",
+    response_model=Response,
 )
 async def update_room(room_id: str, new_values: Room):
     """Обновляем все поле/поля в room в бд"""
@@ -130,14 +155,16 @@ async def update_room(room_id: str, new_values: Room):
     if await rooms_collection.find_one({"_id": id}):
         await rooms_collection.delete_one({"_id": id})
         await rooms_collection.insert_one({"_id": id})
-        await rooms_collection.update_one({"_id": id}, {"$set": new_values})
-        logger.info(
-            f"Room: {room_id}  -  updated"
-        )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
-        return "done"
+        await rooms_collection.update_one(
+            {"_id": id}, {"$set": {"name": new_values.name, "additional": mongo_to_dict_no_id(new_values.additional)}}
+        )
+        message = f"Room: {room_id}  -  updated"
+        logger.info(message)  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+        return ResponseModel(200, message, "Room updated successfully")
     else:
-        logger.info(f"Room: {room_id}  -  not found in the database")
-        return "Room not found"
+        message = f"Room: {room_id}  -  not found in the database"
+        logger.info(message)
+        return ErrorResponseModel(404, message)
 
 
 @router.get(
@@ -145,8 +172,26 @@ async def update_room(room_id: str, new_values: Room):
     tags=["rooms"],
     summary="Get equipment from the room",
     description="Get a list of equipment from the room specified by it's ObjectId",
+    response_model=Response,
 )
 async def list_room_equipments(room_id: str):
     """Достаем все equipment из конкретной комнаты"""
 
-    return [mongo_to_dict(equipment) async for equipment in db.equipment.find({"room_id": room_id})]
+    # Проверка на правильность ObjectId
+    try:
+        id = ObjectId(room_id)
+    except:
+        message = "ObjectId is written in the wrong format"
+        logger.info(message)
+        return ErrorResponseModel(400, message)
+
+    room = await rooms_collection.find_one({"_id": id})
+    if room:
+        data = [
+            mongo_to_dict(equipment) async for equipment in db.equipment.find({"additional": {"room_id": room_id}})
+        ]
+        return ResponseModel(200, data, "Room updated successfully")
+    else:
+        message = "This room is not found"
+        logger.info(message)
+        return ErrorResponseModel(404, message)
