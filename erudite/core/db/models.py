@@ -20,11 +20,9 @@ else:
 
 # Класс из бд sources
 class Equipment(BaseModel):
-    ip: Optional[str] = Field()
-    name: Optional[str] = Field()
-    room_id: Optional[str] = Field()
-    port: Optional[str] = Field()
-    rtsp: Optional[str] = Field()
+    name: str
+    type: str
+    additional: Dict[str, str] = Field(...)
 
 
 # Класс из бд rooms

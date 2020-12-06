@@ -59,7 +59,7 @@ async def find_room(room_id: str):
     "/rooms",
     tags=["rooms"],
     summary="Create room",
-    description="Create room specified by it's ObjectId",
+    description="Create a room specified by it's ObjectId",
     response_model=Response,
 )
 async def create_room(room: Room):
@@ -109,11 +109,11 @@ async def delete_room(room_id: str):
     "/rooms/{room_id}",
     tags=["rooms"],
     summary="Patch room",
-    description="Changes/adds atributes of room specified by it's ObjectId",
+    description="Updates additional atributes of room specified by it's ObjectId",
     response_model=Response,
 )
 async def patch_room(room_id: str, new_values: dict):
-    """Обновляем/добавляем поле/поля в room в бд"""
+    """Обновляем необязательные поля в room в бд"""
 
     # Проверка на правильность ObjectId
     try:
