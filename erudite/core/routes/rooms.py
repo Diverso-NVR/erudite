@@ -2,21 +2,18 @@ from fastapi import APIRouter, Response, status
 import logging
 from bson.objectid import ObjectId
 
-from ..db.models import (
+from ..database.models import (
     Room,
-    db,
-    mongo_to_dict,
     ErrorResponseModel,
     ResponseModel,
     Response,
-    check_ObjectId,
 )
+from ..database.rooms import get_all, get, add, add_empty, get_by_name, remove, patch_additional, patch_all
+from ..database.utils import mongo_to_dict, check_ObjectId
 
 router = APIRouter()
 
 logger = logging.getLogger("erudite")
-
-rooms_collection = db.get_collection("rooms")
 
 
 @router.get(
@@ -29,9 +26,7 @@ rooms_collection = db.get_collection("rooms")
 async def list_rooms():
     """Достаем все rooms"""
 
-    return ResponseModel(
-        200, [mongo_to_dict(room) async for room in rooms_collection.find()], "Rooms returned successfully"
-    )
+    return ResponseModel(200, await get_all(), "Rooms returned successfully")
 
 
 @router.get(
@@ -49,10 +44,10 @@ async def find_room(room_id: str):
 
     if id:
         # Проверка на наличие правилно введенного ObjectId в БД
-        room = await rooms_collection.find_one({"_id": id})
+        room = await get(id)
         if room:
             logger.info(f"Room {room_id}: {room}")
-            return ResponseModel(200, mongo_to_dict(room), "Room returned successfully")
+            return ResponseModel(200, room, "Room returned successfully")
         else:
             message = "This room is not found"
             logger.info(message)
@@ -72,15 +67,14 @@ async def find_room(room_id: str):
 async def create_room(room: Room):
     """Добавляем обьект room в бд"""
 
-    if await rooms_collection.find_one({"name": room.name}):
+    if await get_by_name(room.name):
         message = f"Room with name: '{room.name}'  -  already exists in the database"
         logger.info(message)
         return ErrorResponseModel(403, message)
     else:
-        room_added = await rooms_collection.insert_one(room.dict(by_alias=True))
-        new_room = await rooms_collection.find_one({"_id": room_added.inserted_id})
+        new_room = await add(room)
         logger.info(f"Room: {room.name}  -  added to the database")
-        return ResponseModel(201, mongo_to_dict(new_room), "Room added successfully")
+        return ResponseModel(201, new_room, "Room added successfully")
 
 
 @router.delete(
@@ -97,8 +91,8 @@ async def delete_room(room_id: str):
     id = check_ObjectId(room_id)
 
     if id:
-        if await rooms_collection.find_one({"_id": id}):
-            await rooms_collection.delete_one({"_id": id})
+        if await get(id):
+            await remove(id)
             message = f"Room: {room_id}  -  deleted from the database"
             logger.info(message)
             return ResponseModel(200, message, "Room deleted successfully")
@@ -119,14 +113,14 @@ async def delete_room(room_id: str):
     response_model=Response,
 )
 async def patch_room(room_id: str, new_values: dict):
-    """Обновляем необязательные поля в room в бд"""
+    """ Обновляем необязательные поля в room в бд """
 
     # Проверка на правильность ObjectId
     id = check_ObjectId(room_id)
 
     if id:
-        if await rooms_collection.find_one({"_id": id}):
-            await rooms_collection.update_one({"_id": id}, {"$set": {"additional": new_values}})
+        if await get(id):
+            await patch_additional(id, new_values)
             message = f"Room: {room_id}  -  pached"
             logger.info(
                 message
@@ -149,18 +143,16 @@ async def patch_room(room_id: str, new_values: dict):
     response_model=Response,
 )
 async def update_room(room_id: str, new_values: Room):
-    """Обновляем все поле/поля в room в бд"""
+    """ Обновляем все поле/поля в room в бд """
 
     # Проверка на правильность ObjectId
     id = check_ObjectId(room_id)
 
     if id:
-        if await rooms_collection.find_one({"_id": id}):
-            await rooms_collection.delete_one({"_id": id})
-            await rooms_collection.insert_one({"_id": id})
-            await rooms_collection.update_one(
-                {"_id": id}, {"$set": {"name": new_values.name, "additional": mongo_to_dict(new_values.additional)}}
-            )
+        if await get(id):
+            await remove(id)
+            await add_empty(id)
+            await patch_all(id, new_values)
             message = f"Room: {room_id}  -  updated"
             logger.info(
                 message
@@ -189,7 +181,7 @@ async def list_room_equipments(room_id: str):
     id = check_ObjectId(room_id)
 
     if id:
-        room = await rooms_collection.find_one({"_id": id})
+        room = await get(id)
         if room:
             data = [
                 mongo_to_dict(equipment) async for equipment in db.equipment.find({"additional": {"room_id": room_id}})

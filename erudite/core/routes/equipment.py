@@ -2,7 +2,9 @@ from fastapi import APIRouter
 import logging
 from bson.objectid import ObjectId
 
-from ..db.models import Equipment, db, mongo_to_dict, ErrorResponseModel, ResponseModel, Response, check_ObjectId
+from ..database.models import Equipment, db, ErrorResponseModel, ResponseModel, Response
+from ..database.utils import mongo_to_dict, check_ObjectId
+from ..database.equipment import get_all, get, get_by_name, add  # , add_empty,  remove, patch_additional, patch_all
 
 router = APIRouter()
 
@@ -23,7 +25,7 @@ async def list_equipments():
 
     return ResponseModel(
         200,
-        [mongo_to_dict(equipment) async for equipment in equipment_collection.find()],
+        await get_all(),
         "Equipment returned successfully",
     )
 
@@ -39,14 +41,14 @@ async def find_equipment(equipment_id: str):
     """Достаем обьект equipment из бд"""
 
     # Проверка на правильность ObjectId
-    id = check_ObjectId(room_id)
+    id = check_ObjectId(equipment_id)
 
     if id:
         # Проверка на наличие правилно введенного ObjectId в БД
-        equipment = await equipment_collection.find_one({"_id": id})
+        equipment = await get(id)
         if equipment:
             logger.info(f"Equipment {equipment_id}: {equipment}")
-            return ResponseModel(200, mongo_to_dict(equipment), "Room returned successfully")
+            return ResponseModel(200, mongo_to_dict(equipment), "Equipment returned successfully")
         else:
             message = "This equipment is not found"
             logger.info(message)
@@ -66,13 +68,12 @@ async def find_equipment(equipment_id: str):
 async def create_equipment(equipment: Equipment):
     """Добавляем обьект equipment в бд"""
 
-    if await equipment_collection.find_one({"name": equipment.name}):
+    if await get_by_name(equipment.name):
         message = f"Equipment with name: '{equipment.name}'  -  already exists in the database"
         logger.info(message)
         return ErrorResponseModel(403, message)
     else:
-        equipment_added = await equipment_collection.insert_one(equipment.dict(by_alias=True))
-        new_equipment = await equipment_collection.find_one({"_id": equipment_added.inserted_id})
+        new_equipment = await add(equipment)
         logger.info(f"Equipment: {equipment.name}  -  added to the database")
         return ResponseModel(201, mongo_to_dict(new_equipment), "Equipment added successfully")
 
@@ -88,7 +89,7 @@ async def delete_equipment(equipment_id: str):
     """Удаляем обьект equipment из бд"""
 
     # Проверка на правильность ObjectId
-    id = check_ObjectId(room_id)
+    id = check_ObjectId(equipment_id)
 
     if id:
         if await equipment_collection.find_one({"_id": id}):
@@ -116,7 +117,7 @@ async def patch_equipment(equipment_id: str, new_values: dict) -> str:
     """Обновляем необязательные поля в equipment в бд"""
 
     # Проверка на правильность ObjectId
-    id = check_ObjectId(room_id)
+    id = check_ObjectId(equipment_id)
 
     if id:
         if await equipment_collection.find_one({"_id": id}):
@@ -146,7 +147,7 @@ async def update_equipment(equipment_id: str, new_values: Equipment):
     """Обновляем/добавляем поле/поля в equipment в бд"""
 
     # Проверка на правильность ObjectId
-    id = check_ObjectId(room_id)
+    id = check_ObjectId(equipment_id)
 
     if id:
         if await equipment_collection.find_one({"_id": id}):

@@ -12,7 +12,7 @@ from ..settings import settings
 logger = logging.getLogger("erudite")
 
 # Для подключения к внешней БД:
-client = motor.motor_asyncio.AsyncIOMotorClient("localhost", 27017)  # settings.mongo_url)
+client = motor.motor_asyncio.AsyncIOMotorClient(settings.mongo_url)  # "localhost", 27017
 
 # Проверка на тест
 TESTING = settings.testing
@@ -58,23 +58,3 @@ def ResponseModel(code: int, data: str, message: str) -> JSONResponse:
 # Функция, возвращающая json файл с ошибкой в запросе
 def ErrorResponseModel(code: int, message: str) -> JSONResponse:
     return JSONResponse(status_code=code, content={"message": message})
-
-
-# Перевод модели в словарь
-def mongo_to_dict(obj):
-    id = obj.get("_id")
-    if id:
-        return {**obj, "_id": str(obj["_id"])}
-    else:
-        return {**obj}
-
-
-# Проверка на правильность формата введенного ObjectId
-def check_ObjectId(id: str) -> str:
-    try:
-        new_id = ObjectId(id)
-        return new_id
-    except:
-        message = "ObjectId is written in the wrong format"
-        logger.info(message)
-        return False

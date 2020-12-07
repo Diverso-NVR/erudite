@@ -4,7 +4,8 @@ from typing import Optional
 
 from bson.objectid import ObjectId
 
-from ..db.models import Discipline, db, mongo_to_dict, ErrorResponseModel, ResponseModel, Response
+from ..database.models import Discipline, db, ErrorResponseModel, ResponseModel, Response
+from ..database.utils import mongo_to_dict, check_ObjectId
 
 router = APIRouter()
 
@@ -51,22 +52,21 @@ async def find_discipline(discipline_id: str):
     """Достаем обьект discipline из бд"""
 
     # Проверка на правильность ObjectId
-    try:
-        id = ObjectId(discipline_id)
-    except:
-        message = "ObjectId is written in the wrong format"
-        logger.info(message)
-        return ErrorResponseModel(400, message)
+    id = check_ObjectId(discipline_id)
 
-    # Проверка на наличие правилно введенного ObjectId в БД
-    discipline = await disciplines_collection.find_one({"_id": id})
-    if discipline:
-        logger.info(f"Discipline {discipline_id}: {discipline}")
-        return ResponseModel(200, mongo_to_dict(discipline), "Discipline returned successfully")
+    if id:
+        # Проверка на наличие правилно введенного ObjectId в БД
+        discipline = await disciplines_collection.find_one({"_id": id})
+        if discipline:
+            logger.info(f"Discipline {discipline_id}: {discipline}")
+            return ResponseModel(200, mongo_to_dict(discipline), "Discipline returned successfully")
+        else:
+            message = "This discipline is not found"
+            logger.info(message)
+            return ErrorResponseModel(404, message)
     else:
-        message = "This discipline is not found"
-        logger.info(message)
-        return ErrorResponseModel(404, message)
+        message = "ObjectId is written in the wrong format"
+        return ErrorResponseModel(400, message)
 
 
 @router.post(
