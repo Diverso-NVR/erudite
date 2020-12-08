@@ -24,26 +24,6 @@ else:
     db = client[settings.mongo_db_name]
 
 
-# Класс из бд sources
-class Equipment(BaseModel):
-    name: str
-    type: str
-    additional: Dict[str, str] = Field(...)
-
-
-# Класс из бд rooms
-class Room(BaseModel):
-    name: str
-    additional: Dict[str, str] = Field(...)
-
-
-# Класс дисциплин
-class Discipline(BaseModel):
-    course_code: str = Field(...)
-    groups: List[str] = Field(...)
-    emails: List[str] = Field(...)
-
-
 # Стандртный класс json ответа на запросы
 class Response(BaseModel):
     data: list

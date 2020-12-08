@@ -2,9 +2,19 @@ from fastapi import APIRouter
 import logging
 from bson.objectid import ObjectId
 
-from ..database.models import Equipment, ErrorResponseModel, ResponseModel, Response
+from ..database.models import ErrorResponseModel, ResponseModel, Response
 from ..database.utils import mongo_to_dict, check_ObjectId
-from ..database.equipment import get_all, get, get_by_name, add, remove, add_empty, patch_additional, patch_all
+from ..database.equipment import (
+    get_all,
+    get,
+    get_by_name,
+    add,
+    remove,
+    add_empty,
+    patch_additional,
+    patch_all,
+    Equipment,
+)
 
 router = APIRouter()
 

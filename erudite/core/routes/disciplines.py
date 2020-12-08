@@ -4,9 +4,9 @@ from typing import Optional
 
 from bson.objectid import ObjectId
 
-from ..database.models import Discipline, db, ErrorResponseModel, ResponseModel, Response
+from ..database.models import db, ErrorResponseModel, ResponseModel, Response
 from ..database.utils import mongo_to_dict, check_ObjectId
-from ..database.disciplines import get_all, get, add, get_by_cource_code, remove, add_empty, patch_all
+from ..database.disciplines import get_all, get, add, get_by_cource_code, remove, add_empty, patch_all, Discipline
 
 router = APIRouter()
 

@@ -1,8 +1,17 @@
-from ..database.models import Discipline, db
+from pydantic import BaseModel, Field
+from typing import Optional, List, Dict
+
+from ..database.models import db
 from ..database.utils import mongo_to_dict
 
 
 disciplines_collection = db.get_collection("disciplines")
+
+# Класс дисциплин
+class Discipline(BaseModel):
+    course_code: str = Field(...)
+    groups: List[str] = Field(...)
+    emails: List[str] = Field(...)
 
 
 async def get_all() -> list:

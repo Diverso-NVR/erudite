@@ -1,7 +1,18 @@
-from ..database.models import Equipment, db
+from pydantic import BaseModel, Field
+from typing import Optional, List, Dict
+
+from ..database.models import db
 from ..database.utils import mongo_to_dict
 
+
 equipment_collection = db.get_collection("equipment")
+
+
+# Класс из бд sources
+class Equipment(BaseModel):
+    name: str
+    type: str
+    additional: Dict[str, str] = Field(...)
 
 
 async def get_all() -> list:
