@@ -15,10 +15,13 @@ logger = logging.getLogger("erudite")
     "/disciplines",
     tags=["disciplines"],
     summary="Get all disciplines/discipline by it's course code",
-    description="Get a list of all disciplines in the database, or a discipline by it's course code, if it is written",
+    description=(
+        "Get a list of all disciplines in the database,"
+        "or a discipline by it's course code, if provided"
+    ),
     response_model=Response,
 )
-async def find_discipline(course_code: Optional[str] = None):
+async def get_disciplines(course_code: Optional[str] = None):
     """Достаем обьект discipline из бд"""
 
     if course_code is None:
@@ -78,7 +81,7 @@ async def add_discipline(discipline: Discipline):
     """Создаем обьект discipline"""
 
     if await get_by_cource_code(discipline.course_code):
-        message = f"Discipline with code: {discipline.course_code}  -  already exists in the database"
+        message = f"Discipline with code: {discipline.course_code} already exists in the database"
         logger.info(message)
         return ErrorResponseModel(403, message)
 

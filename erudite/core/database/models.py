@@ -1,9 +1,7 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
+from typing import List, Dict
 import motor.motor_asyncio
 from fastapi.responses import JSONResponse
-from bson.objectid import ObjectId
-import logging
 
 from ..settings import settings
 
