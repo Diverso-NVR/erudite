@@ -22,7 +22,7 @@ async def get(discipline_id: str) -> Discipline:
 
 
 async def get_by_cource_code(course_code: str) -> dict:
-    """ Достаем комнату по указанному имени из бд """
+    """ Достаем дисциплину по указанному имени из бд """
 
     discipline = await disciplines_collection.find_one({"course_code": course_code})
     if discipline:
@@ -32,8 +32,35 @@ async def get_by_cource_code(course_code: str) -> dict:
 
 
 async def add(discipline: Discipline) -> dict:
-    """ Добавляем комнату в бд """
+    """ Добавляем дисциплину в бд """
 
     discipline_added = await disciplines_collection.insert_one(discipline.dict(by_alias=True))
     new = await disciplines_collection.find_one({"_id": discipline_added.inserted_id})
     return mongo_to_dict(new)
+
+
+async def add_empty(discipline_id: str):
+    """ Добавляем дисциплину в бд с указанным id """
+
+    await disciplines_collection.insert_one({"_id": discipline_id})
+
+
+async def remove(discipline_id: str):
+    """ Удаляем дисциплину из бд """
+
+    await disciplines_collection.delete_one({"_id": discipline_id})
+
+
+async def patch_all(discipline_id: str, new_values: Discipline):
+    """ Патчим всю дисциплину """
+
+    await disciplines_collection.update_one(
+        {"_id": discipline_id},
+        {
+            "$set": {
+                "course_code": new_values.course_code,
+                "groups": new_values.groups,
+                "emails": new_values.emails,
+            }
+        },
+    )

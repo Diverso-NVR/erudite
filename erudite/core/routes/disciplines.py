@@ -6,7 +6,7 @@ from bson.objectid import ObjectId
 
 from ..database.models import Discipline, db, ErrorResponseModel, ResponseModel, Response
 from ..database.utils import mongo_to_dict, check_ObjectId
-from ..database.disciplines import get_all, get, add, get_by_cource_code
+from ..database.disciplines import get_all, get, add, get_by_cource_code, remove, add_empty, patch_all
 
 router = APIRouter()
 
@@ -87,3 +87,63 @@ async def add_discipline(discipline: Discipline):
     new_discipline = await add(discipline)
 
     return ResponseModel(201, new_discipline, "Discipline added")
+
+
+@router.delete(
+    "/disciplines/{discipline_id}",
+    tags=["disciplines"],
+    summary="Delete discipline",
+    description="Delete discipline specified by it's ObjectId",
+    response_model=Response,
+)
+async def delete_discipline(discipline_id: str):
+    """Удаляем обьект discipline из бд"""
+
+    # Проверка на правильность ObjectId
+    id = check_ObjectId(discipline_id)
+
+    if id:
+        if await get(id):
+            await remove(id)
+            message = f"Discipline: {discipline_id}  -  deleted from the database"
+            logger.info(message)
+            return ResponseModel(200, message, "Room deleted successfully")
+        else:
+            message = f"Discipline: {discipline_id}  -  not found in the database"
+            logger.info(message)
+            return ErrorResponseModel(404, message)
+    else:
+        message = "ObjectId is written in the wrong format"
+        return ErrorResponseModel(400, message)
+
+
+@router.put(
+    "/disciplines/{discipline_id}",
+    tags=["disciplines"],
+    summary="Updates discipline",
+    description="Deletes old atributes of discipline specified by it's ObjectId and puts in new ones",
+    response_model=Response,
+)
+async def update_discipline(discipline_id: str, new_values: Discipline):
+    """ Обновляем все поле/поля в discipline в бд """
+
+    # Проверка на правильность ObjectId
+    id = check_ObjectId(discipline_id)
+
+    if id:
+        if await get(id):
+            await remove(id)
+            await add_empty(id)
+            await patch_all(id, new_values)
+            message = f"Discipline: {discipline_id}  -  updated"
+            logger.info(
+                message
+            )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+            return ResponseModel(200, message, "Discipline updated successfully")
+        else:
+            message = f"Discipline: {discipline_id}  -  not found in the database"
+            logger.info(message)
+            return ErrorResponseModel(404, message)
+    else:
+        message = "ObjectId is written in the wrong format"
+        return ErrorResponseModel(400, message)
