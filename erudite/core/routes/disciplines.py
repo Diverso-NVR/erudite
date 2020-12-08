@@ -6,12 +6,11 @@ from bson.objectid import ObjectId
 
 from ..database.models import Discipline, db, ErrorResponseModel, ResponseModel, Response
 from ..database.utils import mongo_to_dict, check_ObjectId
+from ..database.disciplines import get_all, get, add, get_by_cource_code
 
 router = APIRouter()
 
 logger = logging.getLogger("erudite")
-
-disciplines_collection = db.get_collection("disciplines")
 
 
 @router.get(
@@ -27,14 +26,14 @@ async def find_discipline(course_code: Optional[str] = None):
     if course_code is None:
         return ResponseModel(
             200,
-            [mongo_to_dict(discipline) async for discipline in disciplines_collection.find()],
+            await get_all(),
             "Disciplines returned successfully",
         )
 
-    discipline = await disciplines_collection.find_one({"course_code": course_code})
+    discipline = await get_by_cource_code(course_code)
     if discipline:
         logger.info(f"Discipline {course_code}: {discipline}")
-        return ResponseModel(200, mongo_to_dict(discipline), "Discipline returned successfully")
+        return ResponseModel(200, discipline, "Discipline returned successfully")
     else:
         message = "This discipline is not found"
         logger.info(message)
@@ -54,12 +53,12 @@ async def find_discipline(discipline_id: str):
     # Проверка на правильность ObjectId
     id = check_ObjectId(discipline_id)
 
+    # Проверка на наличие правилно введенного ObjectId в БД
     if id:
-        # Проверка на наличие правилно введенного ObjectId в БД
-        discipline = await disciplines_collection.find_one({"_id": id})
+        discipline = await get(id)
         if discipline:
             logger.info(f"Discipline {discipline_id}: {discipline}")
-            return ResponseModel(200, mongo_to_dict(discipline), "Discipline returned successfully")
+            return ResponseModel(200, discipline, "Discipline returned successfully")
         else:
             message = "This discipline is not found"
             logger.info(message)
@@ -80,12 +79,11 @@ async def find_discipline(discipline_id: str):
 async def add_discipline(discipline: Discipline):
     """Создаем обьект discipline"""
 
-    if await disciplines_collection.find_one({"course_code": discipline.course_code}):
+    if await get_by_cource_code(discipline.course_code):
         message = f"Discipline with code: {discipline.course_code}  -  already exists in the database"
         logger.info(message)
         return ErrorResponseModel(403, message)
 
-    discipline_added = await disciplines_collection.insert_one(discipline.dict(by_alias=True))
-    new_discipline = await disciplines_collection.find_one({"_id": discipline_added.inserted_id})
+    new_discipline = await add(discipline)
 
-    return ResponseModel(201, mongo_to_dict(new_discipline), "Discipline added")
+    return ResponseModel(201, new_discipline, "Discipline added")
