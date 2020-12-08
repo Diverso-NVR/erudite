@@ -2,15 +2,13 @@ from fastapi import APIRouter
 import logging
 from bson.objectid import ObjectId
 
-from ..database.models import Equipment, db, ErrorResponseModel, ResponseModel, Response
+from ..database.models import Equipment, ErrorResponseModel, ResponseModel, Response
 from ..database.utils import mongo_to_dict, check_ObjectId
-from ..database.equipment import get_all, get, get_by_name, add  # , add_empty,  remove, patch_additional, patch_all
+from ..database.equipment import get_all, get, get_by_name, add, remove, add_empty, patch_additional, patch_all
 
 router = APIRouter()
 
 logger = logging.getLogger("erudite")
-
-equipment_collection = db.get_collection("equipment")
 
 
 @router.get(
@@ -75,7 +73,7 @@ async def create_equipment(equipment: Equipment):
     else:
         new_equipment = await add(equipment)
         logger.info(f"Equipment: {equipment.name}  -  added to the database")
-        return ResponseModel(201, mongo_to_dict(new_equipment), "Equipment added successfully")
+        return ResponseModel(201, new_equipment, "Equipment added successfully")
 
 
 @router.delete(
@@ -92,8 +90,8 @@ async def delete_equipment(equipment_id: str):
     id = check_ObjectId(equipment_id)
 
     if id:
-        if await equipment_collection.find_one({"_id": id}):
-            await equipment_collection.delete_one({"_id": id})
+        if await get(id):
+            await remove(id)
             message = f"Equipment: {equipment_id}  -  deleted from the database"
             logger.info(message)
             return ResponseModel(200, message, "Equipment deleted successfully")
@@ -120,8 +118,8 @@ async def patch_equipment(equipment_id: str, new_values: dict) -> str:
     id = check_ObjectId(equipment_id)
 
     if id:
-        if await equipment_collection.find_one({"_id": id}):
-            await equipment_collection.update_one({"_id": id}, {"$set": {"additional": new_values}})
+        if await get(id):
+            await patch_additional(id, new_values)
             message = f"Equipment: {equipment_id}  -  pached"
             logger.info(
                 message
@@ -150,19 +148,10 @@ async def update_equipment(equipment_id: str, new_values: Equipment):
     id = check_ObjectId(equipment_id)
 
     if id:
-        if await equipment_collection.find_one({"_id": id}):
-            await equipment_collection.delete_one({"_id": id})
-            await equipment_collection.insert_one({"_id": id})
-            await equipment_collection.update_one(
-                {"_id": id},
-                {
-                    "$set": {
-                        "name": new_values.name,
-                        "type": new_values.type,
-                        "additional": mongo_to_dict(new_values.additional),
-                    }
-                },
-            )
+        if await get(id):
+            await remove(id)
+            await add_empty(id)
+            await patch_all(id, new_values)
             message = f"Equipment: {equipment_id}  -  updated"
             logger.info(
                 message

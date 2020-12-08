@@ -10,6 +10,7 @@ from ..database.models import (
 )
 from ..database.rooms import get_all, get, add, add_empty, get_by_name, remove, patch_additional, patch_all
 from ..database.utils import mongo_to_dict, check_ObjectId
+from ..database.equipment import sort
 
 router = APIRouter()
 
@@ -183,9 +184,8 @@ async def list_room_equipments(room_id: str):
     if id:
         room = await get(id)
         if room:
-            data = [
-                mongo_to_dict(equipment) async for equipment in db.equipment.find({"additional": {"room_id": room_id}})
-            ]
+            data = await sort(id)
+            print(data)
             return ResponseModel(200, data, "Room updated successfully")
         else:
             message = "This room is not found"

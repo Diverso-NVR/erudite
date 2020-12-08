@@ -41,24 +41,40 @@ async def add(equipment: Equipment) -> dict:
 async def add_empty(equipment_id: str):
     """ Добавляем оборудование в бд с указанным id """
 
-    await rooms_collection.insert_one({"_id": room_id})
+    await equipment_collection.insert_one({"_id": equipment_id})
 
 
 async def remove(equipment_id: str):
     """ Удаляем оборудование из бд """
 
-    await rooms_collection.delete_one({"_id": room_id})
+    await equipment_collection.delete_one({"_id": equipment_id})
 
 
-async def patch_additional(equipment_id, new_values):
+async def patch_additional(equipment_id: str, new_values: dict):
     """ Патчим дополнительные параметры оборудование """
 
-    await rooms_collection.update_one({"_id": room_id}, {"$set": {"additional": new_values}})
+    await equipment_collection.update_one({"_id": equipment_id}, {"$set": {"additional": new_values}})
 
 
-async def patch_all(equipment_id, new_values):
+async def patch_all(equipment_id: str, new_values: Equipment):
     """ Патчим всю оборудование """
 
-    await rooms_collection.update_one(
-        {"_id": room_id}, {"$set": {"name": new_values.name, "additional": mongo_to_dict(new_values.additional)}}
+    await equipment_collection.update_one(
+        {"_id": equipment_id},
+        {
+            "$set": {
+                "name": new_values.name,
+                "type": new_values.type,
+                "additional": mongo_to_dict(new_values.additional),
+            }
+        },
     )
+
+
+async def sort(room_id: str) -> list:
+    """ Достаем оборудование с указанным room_id из бд """
+
+    return [
+        mongo_to_dict(equipment)
+        async for equipment in equipment_collection.find({"additional": {"room_id": str(room_id)}})
+    ]

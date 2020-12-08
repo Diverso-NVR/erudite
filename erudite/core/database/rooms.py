@@ -50,13 +50,13 @@ async def remove(room_id: str):
     await rooms_collection.delete_one({"_id": room_id})
 
 
-async def patch_additional(room_id, new_values):
+async def patch_additional(room_id: str, new_values: dict):
     """ Патчим дополнительные параметры комнаты """
 
     await rooms_collection.update_one({"_id": room_id}, {"$set": {"additional": new_values}})
 
 
-async def patch_all(room_id, new_values):
+async def patch_all(room_id: str, new_values: Room):
     """ Патчим всю комнату """
 
     await rooms_collection.update_one(
