@@ -1,4 +1,5 @@
 from starlette.middleware.base import BaseHTTPMiddleware
+
 from fastapi.openapi.utils import get_openapi
 
 from core.settings import create_logger
@@ -9,24 +10,33 @@ def create_app():
 
     from fastapi import FastAPI
 
-    app = FastAPI(root_path="/api/erudite")
+    # app = FastAPI(root_path="/api/erudite")
+    app = FastAPI()
 
-    from core.routers.rooms import router as room_router
-    from core.routers.equipment import router as equipment_router
-    from core.routers.disciplines import router as discipline_router
+    from core.routes.rooms import router as room_router
+    from core.routes.equipment import router as equipment_router
+    from core.routes.disciplines import router as discipline_router
+    from core.routes.lessons import router as lesson_router
 
     app.include_router(room_router)
     app.include_router(equipment_router)
     app.include_router(discipline_router)
+    app.include_router(lesson_router)
 
-    from core.middleware import authorization
+    # DEVELOPER
+    # from core.middleware import authorization
 
-    app.add_middleware(BaseHTTPMiddleware, dispatch=authorization)
+    # app.add_middleware(BaseHTTPMiddleware, dispatch=authorization)
 
     return app
 
 
 app = create_app()
+
+
+@app.get("/", include_in_schema=False)
+async def read_root():
+    return {"message": "Welcome to Erudite!"}
 
 
 def custom_openapi():
@@ -36,7 +46,9 @@ def custom_openapi():
     openapi_schema = get_openapi(
         title="Erudite",
         version="1.0.0",
-        description="Erudite – db of rooms, equipment, disciplines and stuff in MIEM. Kinda Google AdminSDK",
+        description=(
+            "Erudite – db of rooms, equipment, disciplines and stuff in MIEM. Kinda Google AdminSDK"
+        ),
         routes=app.routes,
     )
     openapi_schema["info"]["x-logo"] = {
@@ -48,7 +60,6 @@ def custom_openapi():
 
 
 app.openapi = custom_openapi
-
 
 if __name__ == "__main__":
     import uvicorn
