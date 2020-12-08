@@ -21,7 +21,7 @@ def create_app():
     app.include_router(equipment_router)
     app.include_router(discipline_router)
 
-    # DEVELOPER
+    # DEVELOPER change in prod
     # from core.middleware import authorization
 
     # app.add_middleware(BaseHTTPMiddleware, dispatch=authorization)
