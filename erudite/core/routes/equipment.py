@@ -4,7 +4,16 @@ from bson.objectid import ObjectId
 
 from ..database.models import Equipment, ErrorResponseModel, ResponseModel, Response
 from ..database.utils import mongo_to_dict, check_ObjectId
-from ..database.equipment import get_all, get, get_by_name, add, remove, add_empty, patch_additional, patch_all
+from ..database.equipment import (
+    get_all,
+    get,
+    get_by_name,
+    add,
+    remove,
+    add_empty,
+    patch_additional,
+    patch_all,
+)
 
 router = APIRouter()
 
@@ -46,7 +55,9 @@ async def find_equipment(equipment_id: str):
         equipment = await get(id)
         if equipment:
             logger.info(f"Equipment {equipment_id}: {equipment}")
-            return ResponseModel(200, mongo_to_dict(equipment), "Equipment returned successfully")
+            return ResponseModel(
+                200, mongo_to_dict(equipment), "Equipment returned successfully"
+            )
         else:
             message = "This equipment is not found"
             logger.info(message)

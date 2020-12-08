@@ -53,12 +53,20 @@ async def remove(room_id: str):
 async def patch_additional(room_id: str, new_values: dict):
     """ Патчим дополнительные параметры комнаты """
 
-    await rooms_collection.update_one({"_id": room_id}, {"$set": {"additional": new_values}})
+    await rooms_collection.update_one(
+        {"_id": room_id}, {"$set": {"additional": new_values}}
+    )
 
 
 async def patch_all(room_id: str, new_values: Room):
     """ Патчим всю комнату """
 
     await rooms_collection.update_one(
-        {"_id": room_id}, {"$set": {"name": new_values.name, "additional": mongo_to_dict(new_values.additional)}}
+        {"_id": room_id},
+        {
+            "$set": {
+                "name": new_values.name,
+                "additional": mongo_to_dict(new_values.additional),
+            }
+        },
     )

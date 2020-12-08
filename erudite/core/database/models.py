@@ -8,11 +8,10 @@ import logging
 from ..settings import settings
 
 
-# Инициализация логгера
-logger = logging.getLogger("erudite")
-
 # Для подключения к внешней БД:
-client = motor.motor_asyncio.AsyncIOMotorClient(settings.mongo_url)  # "localhost", 27017
+client = motor.motor_asyncio.AsyncIOMotorClient(
+    settings.mongo_url
+)  # "localhost", 27017
 
 # Проверка на тест
 TESTING = settings.testing

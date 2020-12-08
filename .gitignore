@@ -3,3 +3,4 @@
 pycache
 .vscode/
 *.cpython*
+.DS_Store

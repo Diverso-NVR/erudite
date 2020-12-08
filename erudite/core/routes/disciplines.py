@@ -2,10 +2,8 @@ from fastapi import APIRouter
 import logging
 from typing import Optional
 
-from bson.objectid import ObjectId
-
-from ..database.models import Discipline, db, ErrorResponseModel, ResponseModel, Response
-from ..database.utils import mongo_to_dict, check_ObjectId
+from ..database.models import Discipline, ErrorResponseModel, ResponseModel, Response
+from ..database.utils import check_ObjectId
 from ..database.disciplines import get_all, get, add, get_by_cource_code
 
 router = APIRouter()
