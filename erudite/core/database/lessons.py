@@ -1,10 +1,14 @@
+import logging
 from typing import Dict, Optional, List, Union
 from pydantic import BaseModel, Field
+from datetime import datetime
 
 from .models import db
 from .utils import mongo_to_dict
 
 lessons_collection = db.get_collection("lessons")
+
+logger = logging.getLogger("erudite")
 
 
 class Lesson(BaseModel):
@@ -57,24 +61,48 @@ class Lesson(BaseModel):
     end_time: str = Field(..., description="End time of the lesson", example="10:50")
 
 
-async def get_all() -> List[Lesson]:
+async def get_all() -> List[Dict[str, Union[str, int]]]:
     """ Get all lessons from db"""
 
     return [mongo_to_dict(lesson) async for lesson in lessons_collection.find()]
 
 
-async def get_by_ruz_id(lesson_ruz_id: int) -> Optional[Dict[str, Union[str, int]]]:
+async def get_filtered_by_name_and_time(
+    ruz_auditorium: Optional[str] = None,
+    fromdate: Optional[datetime] = None,
+    todate: Optional[datetime] = None,
+) -> Optional[Dict[str, Union[str, int]]]:
     """Get lesson by its ruz id"""
 
-    lesson = await lessons_collection.find_one({"ruz_lesson_oid": int(lesson_ruz_id)})
-    if lesson:
-        return mongo_to_dict(lesson)
+    filter_obj = {"ruz_auditorium": ruz_auditorium}
+    if fromdate is not None:
+        filter_obj["date"] = {
+            "$gte": str(fromdate.date()),
+        }
+        filter_obj["start_time"] = {"$gte": str(fromdate.time())[:5]}
+    if todate is not None:
+        filter_obj["date"]["$lte"] = str(todate.date())
+        filter_obj["end_time"] = {"$lte": str(todate.time())}
+
+    logger.info(f"lessons.get_filtered_by_name_and_time got filter obj: {filter_obj}")
+
+    return [
+        mongo_to_dict(lesson) async for lesson in lessons_collection.find(filter_obj)
+    ]
 
 
 async def get_by_id(lesson_id: str) -> Optional[Dict[str, Union[str, int]]]:
     """Get lesson by its db id"""
 
     lesson = await lessons_collection.find_one({"_id": lesson_id})
+    if lesson:
+        return mongo_to_dict(lesson)
+
+
+async def get_by_ruz_id(ruz_lesson_oid: int) -> Optional[Dict[str, Union[str, int]]]:
+    """Get lesson by its id in RUZ"""
+
+    lesson = await lessons_collection.find_one({"_id": ruz_lesson_oid})
     if lesson:
         return mongo_to_dict(lesson)
 

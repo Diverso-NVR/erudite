@@ -2,7 +2,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from fastapi.openapi.utils import get_openapi
 
-from core.settings import create_logger
+from core.settings import create_logger, settings
 
 
 def create_app():
@@ -10,8 +10,13 @@ def create_app():
 
     from fastapi import FastAPI
 
-    # app = FastAPI(root_path="/api/erudite")
-    app = FastAPI()
+    if settings.dev:
+        app = FastAPI()
+    else:
+        app = FastAPI(root_path="/api/erudite")
+        from core.middleware import authorization
+
+        app.add_middleware(BaseHTTPMiddleware, dispatch=authorization)
 
     from core.routes.rooms import router as room_router
     from core.routes.equipment import router as equipment_router
@@ -22,11 +27,6 @@ def create_app():
     app.include_router(equipment_router)
     app.include_router(discipline_router)
     app.include_router(lesson_router)
-
-    # DEVELOPER
-    # from core.middleware import authorization
-
-    # app.add_middleware(BaseHTTPMiddleware, dispatch=authorization)
 
     return app
 
