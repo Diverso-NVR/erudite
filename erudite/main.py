@@ -2,16 +2,21 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from fastapi.openapi.utils import get_openapi
 
-from core.settings import create_logger
+from core.settings import create_logger, settings
 
 
 def create_app():
-    create_logger("erudite")  # Создание логгера
+    create_logger("erudite")  # Logger creation
 
     from fastapi import FastAPI
 
-    # app = FastAPI(root_path="/api/erudite")
-    app = FastAPI()
+    if settings.dev:
+        app = FastAPI()
+    else:
+        app = FastAPI(root_path="/api/erudite")
+        from core.middleware import authorization
+
+        app.add_middleware(BaseHTTPMiddleware, dispatch=authorization)
 
     from core.routes.rooms import router as room_router
     from core.routes.equipment import router as equipment_router
@@ -22,11 +27,6 @@ def create_app():
     app.include_router(equipment_router)
     app.include_router(discipline_router)
     app.include_router(lesson_router)
-
-    # DEVELOPER change in prod
-    # from core.middleware import authorization
-
-    # app.add_middleware(BaseHTTPMiddleware, dispatch=authorization)
 
     return app
 
@@ -46,14 +46,10 @@ def custom_openapi():
     openapi_schema = get_openapi(
         title="Erudite",
         version="1.0.0",
-        description=(
-            "Erudite – db of rooms, equipment, disciplines and stuff in MIEM. Kinda Google AdminSDK"
-        ),
+        description=("Erudite – db of rooms, equipment, disciplines and stuff in MIEM. Kinda Google AdminSDK"),
         routes=app.routes,
     )
-    openapi_schema["info"]["x-logo"] = {
-        "url": "https://avatars2.githubusercontent.com/u/64712541"
-    }
+    openapi_schema["info"]["x-logo"] = {"url": "https://avatars2.githubusercontent.com/u/64712541"}
 
     app.openapi_schema = openapi_schema
     return app.openapi_schema

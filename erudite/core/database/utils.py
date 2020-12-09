@@ -8,7 +8,7 @@ from bson.objectid import ObjectId
 logger = logging.getLogger("erudite")
 
 
-# Перевод модели в словарь
+# Schemas to dictionary
 def mongo_to_dict(obj):
     if obj.get("_id") is None:
         return obj
@@ -16,7 +16,7 @@ def mongo_to_dict(obj):
     return {**obj, "_id": str(obj["_id"])}
 
 
-# Проверка на правильность формата введенного ObjectId
+# Check if ObjectId is in the right format
 def check_ObjectId(id: str) -> str:
     try:
         new_id = ObjectId(id)

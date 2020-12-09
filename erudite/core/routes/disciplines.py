@@ -21,8 +21,6 @@ logger = logging.getLogger("erudite")
     response_model=Response,
 )
 async def get_disciplines(course_code: Optional[str] = None):
-    """Достаем обьект discipline из бд"""
-
     if course_code is None:
         return ResponseModel(
             200,
@@ -34,6 +32,7 @@ async def get_disciplines(course_code: Optional[str] = None):
     if discipline:
         logger.info(f"Discipline {course_code}: {discipline}")
         return ResponseModel(200, discipline, "Discipline returned successfully")
+    # Check if discipline with specified ObjectId is in the database
     else:
         message = "This discipline is not found"
         logger.info(message)
@@ -48,12 +47,10 @@ async def get_disciplines(course_code: Optional[str] = None):
     response_model=Response,
 )
 async def find_discipline(discipline_id: str):
-    """Достаем обьект discipline из бд"""
-
-    # Проверка на правильность ObjectId
+    # Check if ObjectId is in the right format
     id = check_ObjectId(discipline_id)
 
-    # Проверка на наличие правилно введенного ObjectId в БД
+    # Check if discipline with specified ObjectId is in the database
     if id:
         discipline = await get(id)
         if discipline:
@@ -77,8 +74,7 @@ async def find_discipline(discipline_id: str):
     response_model=Response,
 )
 async def add_discipline(discipline: Discipline):
-    """Создаем обьект discipline"""
-
+    # Check if discipline with specified ObjectId is in the database
     if await get_by_cource_code(discipline.course_code):
         message = f"Discipline with code: {discipline.course_code} already exists in the database"
         logger.info(message)
@@ -97,9 +93,7 @@ async def add_discipline(discipline: Discipline):
     response_model=Response,
 )
 async def delete_discipline(discipline_id: str):
-    """Удаляем обьект discipline из бд"""
-
-    # Проверка на правильность ObjectId
+    # Check if ObjectId is in the right format
     id = check_ObjectId(discipline_id)
 
     if id:
@@ -108,6 +102,7 @@ async def delete_discipline(discipline_id: str):
             message = f"Discipline: {discipline_id}  -  deleted from the database"
             logger.info(message)
             return ResponseModel(200, message, "Room deleted successfully")
+        # Check if discipline with specified ObjectId is in the database
         else:
             message = f"Discipline: {discipline_id}  -  not found in the database"
             logger.info(message)
@@ -125,9 +120,7 @@ async def delete_discipline(discipline_id: str):
     response_model=Response,
 )
 async def update_discipline(discipline_id: str, new_values: Discipline):
-    """ Обновляем все поле/поля в discipline в бд """
-
-    # Проверка на правильность ObjectId
+    # Check if ObjectId is in the right format
     id = check_ObjectId(discipline_id)
 
     if id:
@@ -140,6 +133,7 @@ async def update_discipline(discipline_id: str, new_values: Discipline):
                 message
             )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
             return ResponseModel(200, message, "Discipline updated successfully")
+        # Check if discipline with specified ObjectId is in the database
         else:
             message = f"Discipline: {discipline_id}  -  not found in the database"
             logger.info(message)

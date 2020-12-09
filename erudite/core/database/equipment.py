@@ -8,7 +8,7 @@ from ..database.utils import mongo_to_dict
 equipment_collection = db.get_collection("equipment")
 
 
-# Класс из бд sources
+# Class from db sources
 class Equipment(BaseModel):
     name: str
     type: str
@@ -16,13 +16,13 @@ class Equipment(BaseModel):
 
 
 async def get_all() -> list:
-    """ Достаем оборудование из бд """
+    """ Get all equipment from db """
 
     return [mongo_to_dict(equipment) async for equipment in equipment_collection.find()]
 
 
 async def get(equipment_id: str) -> Equipment:
-    """ Достаем оборудование по указанному ObjectId из бд """
+    """ Get equipment by its db id """
 
     equipment = await equipment_collection.find_one({"_id": equipment_id})
     if equipment:
@@ -32,7 +32,7 @@ async def get(equipment_id: str) -> Equipment:
 
 
 async def get_by_name(name: str) -> dict:
-    """ Достаем оборудование по указанному имени из бд """
+    """ Get equipment by its name """
 
     equipment = await equipment_collection.find_one({"name": name})
     if equipment:
@@ -42,37 +42,33 @@ async def get_by_name(name: str) -> dict:
 
 
 async def add(equipment: Equipment) -> dict:
-    """ Добавляем оборудование в бд """
+    """ Add equipment to db """
 
-    equipment_added = await equipment_collection.insert_one(
-        equipment.dict(by_alias=True)
-    )
+    equipment_added = await equipment_collection.insert_one(equipment.dict(by_alias=True))
     new = await equipment_collection.find_one({"_id": equipment_added.inserted_id})
     return mongo_to_dict(new)
 
 
 async def add_empty(equipment_id: str):
-    """ Добавляем оборудование в бд с указанным id """
+    """ Add empty equipment with specified id to db """
 
     await equipment_collection.insert_one({"_id": equipment_id})
 
 
 async def remove(equipment_id: str):
-    """ Удаляем оборудование из бд """
+    """ Delete equipment from db """
 
     await equipment_collection.delete_one({"_id": equipment_id})
 
 
 async def patch_additional(equipment_id: str, new_values: dict):
-    """ Патчим дополнительные параметры оборудование """
+    """ Patch equipment """
 
-    await equipment_collection.update_one(
-        {"_id": equipment_id}, {"$set": {"additional": new_values}}
-    )
+    await equipment_collection.update_one({"_id": equipment_id}, {"$set": {"additional": new_values}})
 
 
 async def patch_all(equipment_id: str, new_values: Equipment):
-    """ Патчим всю оборудование """
+    """ Patch equipment """
 
     await equipment_collection.update_one(
         {"_id": equipment_id},
@@ -87,11 +83,9 @@ async def patch_all(equipment_id: str, new_values: Equipment):
 
 
 async def sort(room_id: str) -> list:
-    """ Достаем оборудование с указанным room_id из бд """
+    """ Get equipment by its db room_id """
 
     return [
         mongo_to_dict(equipment)
-        async for equipment in equipment_collection.find(
-            {"additional": {"room_id": str(room_id)}}
-        )
+        async for equipment in equipment_collection.find({"additional": {"room_id": str(room_id)}})
     ]

@@ -7,20 +7,20 @@ from ..database.utils import mongo_to_dict
 rooms_collection = db.get_collection("rooms")
 
 
-# Класс из бд rooms
+# Class from db of rooms
 class Room(BaseModel):
     name: str
     additional: Dict[str, str] = Field(...)
 
 
 async def get_all() -> list:
-    """ Достаем комнаты из бд """
+    """ Get all rooms from db """
 
     return [mongo_to_dict(room) async for room in rooms_collection.find()]
 
 
 async def get(room_id: str) -> Room:
-    """ Достаем комнату по указанному ObjectId из бд """
+    """ Get room by its db id """
 
     room = await rooms_collection.find_one({"_id": room_id})
     if room:
@@ -30,7 +30,7 @@ async def get(room_id: str) -> Room:
 
 
 async def get_by_name(name: str) -> dict:
-    """ Достаем комнату по указанному имени из бд """
+    """ Get room by its name """
 
     room = await rooms_collection.find_one({"name": name})
     if room:
@@ -40,7 +40,7 @@ async def get_by_name(name: str) -> dict:
 
 
 async def add(room: Room) -> dict:
-    """ Добавляем комнату в бд """
+    """ Add room to db """
 
     room_added = await rooms_collection.insert_one(room.dict(by_alias=True))
     new = await rooms_collection.find_one({"_id": room_added.inserted_id})
@@ -48,27 +48,25 @@ async def add(room: Room) -> dict:
 
 
 async def add_empty(room_id: str):
-    """ Добавляем комнату в бд с указанным id """
+    """ Add empty room with specified id to db """
 
     await rooms_collection.insert_one({"_id": room_id})
 
 
 async def remove(room_id: str):
-    """ Удаляем комнату из бд """
+    """ Delete room from db """
 
     await rooms_collection.delete_one({"_id": room_id})
 
 
 async def patch_additional(room_id: str, new_values: dict):
-    """ Патчим дополнительные параметры комнаты """
+    """ Patch room """
 
-    await rooms_collection.update_one(
-        {"_id": room_id}, {"$set": {"additional": new_values}}
-    )
+    await rooms_collection.update_one({"_id": room_id}, {"$set": {"additional": new_values}})
 
 
 async def patch_all(room_id: str, new_values: Room):
-    """ Патчим всю комнату """
+    """ Patch room """
 
     await rooms_collection.update_one(
         {"_id": room_id},

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 import logging
 from typing import Optional
+from datetime import datetime
 
 from ..database.models import ErrorResponseModel, ResponseModel, Response
 from ..database.utils import check_ObjectId
@@ -15,29 +16,24 @@ logger = logging.getLogger("erudite")
     "/lessons",
     tags=["lessons"],
     summary="Get all lessons or lesson by it's ruz id",
-    description=(
-        "Get a list of all lessons in the database, or a lesson by it's ruz iz, if provided"
-    ),
+    description=("Get a list of all lessons in the database, or a lesson by it's ruz iz, if provided"),
     response_model=Response,
 )
-async def get_lessons(lesson_ruz_id: Optional[int] = None):
-    """Достаем обьект lesson из бд"""
-
-    if lesson_ruz_id is None:
+async def get_lessons(
+    ruz_auditorium: Optional[str] = None,
+    fromdate: Optional[datetime] = None,
+    todate: Optional[datetime] = None,
+):
+    if ruz_auditorium is None and fromdate is None and todate is None:
         return ResponseModel(
             200,
             await lessons.get_all(),
-            "Disciplines returned successfully",
+            "All lessons returned successfully",
         )
 
-    lesson = await lessons.get_by_ruz_id(lesson_ruz_id)
-    if lesson:
-        logger.info(f"Lesson {lesson_ruz_id}: {lesson}")
-        return ResponseModel(200, lesson, "Lesson returned successfully")
-    else:
-        message = "This lesson is not found"
-        logger.info(message)
-        return ErrorResponseModel(404, message)
+    lessons_res = await lessons.get_filtered_by_name_and_time(ruz_auditorium, fromdate, todate)
+
+    return ResponseModel(200, lessons_res, "Filtered lessons returned successfully")
 
 
 @router.get(
@@ -81,4 +77,4 @@ async def add_lesson(lesson: lessons.Lesson, request: Request):
 
     new_lesson = await lessons.add(await request.json())
 
-    return ResponseModel(201, new_lesson, "Discipline added")
+    return ResponseModel(201, new_lesson, "Lesson added")

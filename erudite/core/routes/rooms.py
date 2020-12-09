@@ -23,8 +23,6 @@ logger = logging.getLogger("erudite")
     response_model=Response,
 )
 async def list_rooms():
-    """Достаем все rooms"""
-
     return ResponseModel(200, await get_all(), "Rooms returned successfully")
 
 
@@ -36,13 +34,11 @@ async def list_rooms():
     response_model=Response,
 )
 async def find_room(room_id: str):
-    """Достаем обьект room из бд"""
-
-    # Проверка на правильность ObjectId
+    # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
 
     if id:
-        # Проверка на наличие правилно введенного ObjectId в БД
+        # Check if room with specified ObjectId is in the database
         room = await get(id)
         if room:
             logger.info(f"Room {room_id}: {room}")
@@ -64,8 +60,7 @@ async def find_room(room_id: str):
     response_model=Response,
 )
 async def create_room(room: Room):
-    """Добавляем обьект room в бд"""
-
+    # Check if room with specified ObjectId is in the database
     if await get_by_name(room.name):
         message = f"Room with name: '{room.name}'  -  already exists in the database"
         logger.info(message)
@@ -84,9 +79,7 @@ async def create_room(room: Room):
     response_model=Response,
 )
 async def delete_room(room_id: str):
-    """Удаляем обьект room из бд"""
-
-    # Проверка на правильность ObjectId
+    # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
 
     if id:
@@ -95,6 +88,7 @@ async def delete_room(room_id: str):
             message = f"Room: {room_id}  -  deleted from the database"
             logger.info(message)
             return ResponseModel(200, message, "Room deleted successfully")
+        # Check if room with specified ObjectId is in the database
         else:
             message = f"Room: {room_id}  -  not found in the database"
             logger.info(message)
@@ -112,9 +106,7 @@ async def delete_room(room_id: str):
     response_model=Response,
 )
 async def patch_room(room_id: str, new_values: dict):
-    """ Обновляем необязательные поля в room в бд """
-
-    # Проверка на правильность ObjectId
+    # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
 
     if id:
@@ -123,6 +115,7 @@ async def patch_room(room_id: str, new_values: dict):
             message = f"Room: {room_id}  -  pached"
             logger.info(message)
             return ResponseModel(200, message, "Room patched successfully")
+        # Check if room with specified ObjectId is in the database
         else:
             message = f"Room: {room_id}  -  not found in the database"
             logger.info(message)
@@ -140,9 +133,7 @@ async def patch_room(room_id: str, new_values: dict):
     response_model=Response,
 )
 async def update_room(room_id: str, new_values: Room):
-    """ Обновляем все поле/поля в room в бд """
-
-    # Проверка на правильность ObjectId
+    # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
 
     if id:
@@ -153,6 +144,7 @@ async def update_room(room_id: str, new_values: Room):
             message = f"Room: {room_id}  -  updated"
             logger.info(message)
             return ResponseModel(200, message, "Room updated successfully")
+        # Check if room with specified ObjectId is in the database
         else:
             message = f"Room: {room_id}  -  not found in the database"
             logger.info(message)
@@ -170,9 +162,7 @@ async def update_room(room_id: str, new_values: Room):
     response_model=Response,
 )
 async def list_room_equipments(room_id: str):
-    """Достаем все equipment из конкретной комнаты"""
-
-    # Проверка на правильность ObjectId
+    # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
 
     if id:
@@ -181,6 +171,7 @@ async def list_room_equipments(room_id: str):
             data = await sort(id)
             print(data)
             return ResponseModel(200, data, "Room updated successfully")
+        # Check if equipment with specified room_id is in the database
         else:
             message = "This room is not found"
             logger.info(message)

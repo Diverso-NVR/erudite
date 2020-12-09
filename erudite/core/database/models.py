@@ -6,32 +6,30 @@ from fastapi.responses import JSONResponse
 from ..settings import settings
 
 
-# Для подключения к внешней БД:
-client = motor.motor_asyncio.AsyncIOMotorClient(
-    settings.mongo_url
-)  # "localhost", 27017
+# Connection to a remote db:
+client = motor.motor_asyncio.AsyncIOMotorClient(settings.mongo_url)
 
-# Проверка на тест
+# Check if it's a test run
 TESTING = settings.testing
 
-# Доступ к БД через motor
+# Access to a db using motor
 if TESTING:
     db = client["testDb"]
 else:
     db = client[settings.mongo_db_name]
 
 
-# Стандртный класс json ответа на запросы
+# Standart class or a json responce
 class Response(BaseModel):
     data: list
     message: str
 
 
-# Функция, возвращающая json файл ответом на запрос
+# Respond with a json file
 def ResponseModel(code: int, data: str, message: str) -> JSONResponse:
     return JSONResponse(status_code=code, content={"data": data, "message": message})
 
 
-# Функция, возвращающая json файл с ошибкой в запросе
+# Error respond with a json file
 def ErrorResponseModel(code: int, message: str) -> JSONResponse:
     return JSONResponse(status_code=code, content={"message": message})

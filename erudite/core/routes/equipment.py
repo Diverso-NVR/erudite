@@ -28,8 +28,6 @@ logger = logging.getLogger("erudite")
     response_model=Response,
 )
 async def list_equipments():
-    """Достаем все equipment"""
-
     return ResponseModel(
         200,
         await get_all(),
@@ -45,13 +43,11 @@ async def list_equipments():
     response_model=Response,
 )
 async def find_equipment(equipment_id: str):
-    """Достаем обьект equipment из бд"""
-
-    # Проверка на правильность ObjectId
+    # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 
     if id:
-        # Проверка на наличие правилно введенного ObjectId в БД
+        # Check if equipment with specified ObjectId is in the database
         equipment = await get(id)
         if equipment:
             logger.info(f"Equipment {equipment_id}: {equipment}")
@@ -73,8 +69,7 @@ async def find_equipment(equipment_id: str):
     response_model=Response,
 )
 async def create_equipment(equipment: Equipment):
-    """Добавляем обьект equipment в бд"""
-
+    # Check if equipment with specified ObjectId is in the database
     if await get_by_name(equipment.name):
         message = f"Equipment with name: '{equipment.name}'  -  already exists in the database"
         logger.info(message)
@@ -93,9 +88,7 @@ async def create_equipment(equipment: Equipment):
     response_model=Response,
 )
 async def delete_equipment(equipment_id: str):
-    """Удаляем обьект equipment из бд"""
-
-    # Проверка на правильность ObjectId
+    # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 
     if id:
@@ -104,6 +97,7 @@ async def delete_equipment(equipment_id: str):
             message = f"Equipment: {equipment_id}  -  deleted from the database"
             logger.info(message)
             return ResponseModel(200, message, "Equipment deleted successfully")
+        # Check if equipment with specified ObjectId is in the database
         else:
             message = f"Equipment: {equipment_id}  -  not found in the database"
             logger.info(message)
@@ -121,9 +115,7 @@ async def delete_equipment(equipment_id: str):
     response_model=Response,
 )
 async def patch_equipment(equipment_id: str, new_values: dict) -> str:
-    """Обновляем необязательные поля в equipment в бд"""
-
-    # Проверка на правильность ObjectId
+    # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 
     if id:
@@ -132,6 +124,7 @@ async def patch_equipment(equipment_id: str, new_values: dict) -> str:
             message = f"Equipment: {equipment_id}  -  pached"
             logger.info(message)
             return ResponseModel(200, message, "Equipment patched successfully")
+        # Check if equipment with specified ObjectId is in the database
         else:
             message = f"Equipment: {equipment_id}  -  not found in the database"
             logger.info(message)
@@ -149,9 +142,7 @@ async def patch_equipment(equipment_id: str, new_values: dict) -> str:
     response_model=Response,
 )
 async def update_equipment(equipment_id: str, new_values: Equipment):
-    """Обновляем/добавляем поле/поля в equipment в бд"""
-
-    # Проверка на правильность ObjectId
+    # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 
     if id:
@@ -162,6 +153,7 @@ async def update_equipment(equipment_id: str, new_values: Equipment):
             message = f"Equipment: {equipment_id}  -  updated"
             logger.info(message)
             return ResponseModel(200, message, "Equipment updated successfully")
+        # Check if equipment with specified ObjectId is in the database
         else:
             message = f"Equipment: {equipment_id}  -  not found in the database"
             logger.info(message)
