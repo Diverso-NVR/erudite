@@ -6,7 +6,7 @@ from bson.objectid import ObjectId
 
 from ..database.models import db, ErrorResponseModel, ResponseModel, Response
 from ..database.utils import mongo_to_dict, check_ObjectId
-from ..database.disciplines import get_all, get, add, get_by_cource_code, remove, add_empty, patch_all, Discipline
+from ..database import disciplines
 
 router = APIRouter()
 
@@ -24,7 +24,7 @@ async def get_disciplines(course_code: Optional[str] = None):
     if course_code is None:
         return ResponseModel(
             200,
-            await get_all(),
+            await disciplines.get_all(),
             "Disciplines returned successfully",
         )
 
@@ -52,7 +52,7 @@ async def find_discipline(discipline_id: str):
 
     # Check if discipline with specified ObjectId is in the database
     if id:
-        discipline = await get(id)
+        discipline = await disciplines.get(id)
         if discipline:
             logger.info(f"Discipline {discipline_id}: {discipline}")
             return ResponseModel(200, discipline, "Discipline returned successfully")
@@ -73,14 +73,14 @@ async def find_discipline(discipline_id: str):
     description="Create discipline specified by it's ObjectId",
     response_model=Response,
 )
-async def add_discipline(discipline: Discipline):
+async def add_discipline(discipline: disciplines.Discipline):
     # Check if discipline with specified ObjectId is in the database
-    if await get_by_cource_code(discipline.course_code):
+    if await disciplines.get_by_cource_code(discipline.course_code):
         message = f"Discipline with code: {discipline.course_code} already exists in the database"
         logger.info(message)
         return ErrorResponseModel(403, message)
 
-    new_discipline = await add(discipline)
+    new_discipline = await disciplines.add(discipline)
 
     return ResponseModel(201, new_discipline, "Discipline added")
 
@@ -97,8 +97,8 @@ async def delete_discipline(discipline_id: str):
     id = check_ObjectId(discipline_id)
 
     if id:
-        if await get(id):
-            await remove(id)
+        if await disciplines.get(id):
+            await disciplines.remove(id)
             message = f"Discipline: {discipline_id}  -  deleted from the database"
             logger.info(message)
             return ResponseModel(200, message, "Room deleted successfully")
@@ -119,15 +119,15 @@ async def delete_discipline(discipline_id: str):
     description="Deletes old atributes of discipline specified by it's ObjectId and puts in new ones",
     response_model=Response,
 )
-async def update_discipline(discipline_id: str, new_values: Discipline):
+async def update_discipline(discipline_id: str, new_values: disciplines.Discipline):
     # Check if ObjectId is in the right format
     id = check_ObjectId(discipline_id)
 
     if id:
-        if await get(id):
-            await remove(id)
-            await add_empty(id)
-            await patch_all(id, new_values)
+        if await disciplines.get(id):
+            await disciplines.remove(id)
+            await disciplines.add_empty(id)
+            await disciplines.patch_all(id, new_values)
             message = f"Discipline: {discipline_id}  -  updated"
             logger.info(
                 message
