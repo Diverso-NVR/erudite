@@ -13,7 +13,9 @@ def create_logger(name: str, mode: str = "INFO"):
     handler = logging.StreamHandler()
     handler.setLevel(logs[mode])
 
-    formatter = logging.Formatter("%(levelname)-8s  %(asctime)s    %(message)s", datefmt="%d-%m-%Y %I:%M:%S %p")
+    formatter = logging.Formatter(
+        "%(levelname)-8s  %(asctime)s    %(message)s", datefmt="%d-%m-%Y %I:%M:%S %p"
+    )
 
     handler.setFormatter(formatter)
 

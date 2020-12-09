@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 import logging
-from bson.objectid import ObjectId
 
 from ..database.models import ErrorResponseModel, ResponseModel, Response
 from ..database.utils import mongo_to_dict, check_ObjectId
@@ -131,9 +130,7 @@ async def patch_equipment(equipment_id: str, new_values: dict) -> str:
         if await get(id):
             await patch_additional(id, new_values)
             message = f"Equipment: {equipment_id}  -  pached"
-            logger.info(
-                message
-            )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+            logger.info(message)
             return ResponseModel(200, message, "Equipment patched successfully")
         else:
             message = f"Equipment: {equipment_id}  -  not found in the database"
@@ -148,7 +145,7 @@ async def patch_equipment(equipment_id: str, new_values: dict) -> str:
     "/equipment/{equipment_id}",
     tags=["equipment"],
     summary="Update equipment",
-    description="Deletes old atributes of equipment specified by it's ObjectId and puts in new ones",
+    description="Deletes old atributes of equipment and puts in new ones",
     response_model=Response,
 )
 async def update_equipment(equipment_id: str, new_values: Equipment):
@@ -163,9 +160,7 @@ async def update_equipment(equipment_id: str, new_values: Equipment):
             await add_empty(id)
             await patch_all(id, new_values)
             message = f"Equipment: {equipment_id}  -  updated"
-            logger.info(
-                message
-            )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+            logger.info(message)
             return ResponseModel(200, message, "Equipment updated successfully")
         else:
             message = f"Equipment: {equipment_id}  -  not found in the database"

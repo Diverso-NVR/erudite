@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter
 import logging
-from bson.objectid import ObjectId
 
 from ..database.models import (
     ErrorResponseModel,
@@ -122,9 +121,7 @@ async def patch_room(room_id: str, new_values: dict):
         if await get(id):
             await patch_additional(id, new_values)
             message = f"Room: {room_id}  -  pached"
-            logger.info(
-                message
-            )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+            logger.info(message)
             return ResponseModel(200, message, "Room patched successfully")
         else:
             message = f"Room: {room_id}  -  not found in the database"
@@ -154,9 +151,7 @@ async def update_room(room_id: str, new_values: Room):
             await add_empty(id)
             await patch_all(id, new_values)
             message = f"Room: {room_id}  -  updated"
-            logger.info(
-                message
-            )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
+            logger.info(message)
             return ResponseModel(200, message, "Room updated successfully")
         else:
             message = f"Room: {room_id}  -  not found in the database"
