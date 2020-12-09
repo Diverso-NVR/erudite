@@ -56,6 +56,10 @@ class Lesson(BaseModel):
         None,
         description="Google Calendar event id. Event is a copy of ruz lesson",
     )
+    gcalendar_calendar_id: str = Field(
+        None, description="Google Calendar id, where event is stored"
+    )
+
     date: str = Field(..., description="Date of the lesson", example="2020-12-15")
     start_time: str = Field(..., description="Start time of the lesson", example="9:30")
     end_time: str = Field(..., description="End time of the lesson", example="10:50")
