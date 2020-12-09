@@ -1,11 +1,12 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
+from typing import List
 
 from ..database.models import db
 from ..database.utils import mongo_to_dict
 
 
 disciplines_collection = db.get_collection("disciplines")
+
 
 # Class of disciplines
 class Discipline(BaseModel):
@@ -17,7 +18,9 @@ class Discipline(BaseModel):
 async def get_all() -> list:
     """ Get all disciplines from db """
 
-    return [mongo_to_dict(discipline) async for discipline in disciplines_collection.find()]
+    return [
+        mongo_to_dict(discipline) async for discipline in disciplines_collection.find()
+    ]
 
 
 async def get(discipline_id: str) -> Discipline:
@@ -26,8 +29,6 @@ async def get(discipline_id: str) -> Discipline:
     discipline = await disciplines_collection.find_one({"_id": discipline_id})
     if discipline:
         return mongo_to_dict(discipline)
-    else:
-        return False
 
 
 async def get_by_cource_code(course_code: str) -> dict:
@@ -36,14 +37,14 @@ async def get_by_cource_code(course_code: str) -> dict:
     discipline = await disciplines_collection.find_one({"course_code": course_code})
     if discipline:
         return mongo_to_dict(discipline)
-    else:
-        return False
 
 
 async def add(discipline: Discipline) -> dict:
     """ Add discipline to db """
 
-    discipline_added = await disciplines_collection.insert_one(discipline.dict(by_alias=True))
+    discipline_added = await disciplines_collection.insert_one(
+        discipline.dict(by_alias=True)
+    )
     new = await disciplines_collection.find_one({"_id": discipline_added.inserted_id})
     return mongo_to_dict(new)
 

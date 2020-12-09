@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
+from typing import Dict
 
 from ..database.models import db
 from ..database.utils import mongo_to_dict
@@ -25,8 +25,6 @@ async def get(room_id: str) -> Room:
     room = await rooms_collection.find_one({"_id": room_id})
     if room:
         return mongo_to_dict(room)
-    else:
-        return False
 
 
 async def get_by_name(name: str) -> dict:
@@ -35,8 +33,6 @@ async def get_by_name(name: str) -> dict:
     room = await rooms_collection.find_one({"name": name})
     if room:
         return mongo_to_dict(room)
-    else:
-        return False
 
 
 async def add(room: Room) -> dict:
@@ -62,7 +58,9 @@ async def remove(room_id: str):
 async def patch_additional(room_id: str, new_values: dict):
     """ Patch room """
 
-    await rooms_collection.update_one({"_id": room_id}, {"$set": {"additional": new_values}})
+    await rooms_collection.update_one(
+        {"_id": room_id}, {"$set": {"additional": new_values}}
+    )
 
 
 async def patch_all(room_id: str, new_values: Room):

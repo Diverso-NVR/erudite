@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
+from typing import Dict
 
 from ..database.models import db
 from ..database.utils import mongo_to_dict
@@ -27,8 +27,6 @@ async def get(equipment_id: str) -> Equipment:
     equipment = await equipment_collection.find_one({"_id": equipment_id})
     if equipment:
         return mongo_to_dict(equipment)
-    else:
-        return False
 
 
 async def get_by_name(name: str) -> dict:
@@ -37,14 +35,14 @@ async def get_by_name(name: str) -> dict:
     equipment = await equipment_collection.find_one({"name": name})
     if equipment:
         return mongo_to_dict(equipment)
-    else:
-        return False
 
 
 async def add(equipment: Equipment) -> dict:
     """ Add equipment to db """
 
-    equipment_added = await equipment_collection.insert_one(equipment.dict(by_alias=True))
+    equipment_added = await equipment_collection.insert_one(
+        equipment.dict(by_alias=True)
+    )
     new = await equipment_collection.find_one({"_id": equipment_added.inserted_id})
     return mongo_to_dict(new)
 
@@ -64,7 +62,9 @@ async def remove(equipment_id: str):
 async def patch_additional(equipment_id: str, new_values: dict):
     """ Patch equipment """
 
-    await equipment_collection.update_one({"_id": equipment_id}, {"$set": {"additional": new_values}})
+    await equipment_collection.update_one(
+        {"_id": equipment_id}, {"$set": {"additional": new_values}}
+    )
 
 
 async def patch_all(equipment_id: str, new_values: Equipment):
@@ -87,5 +87,7 @@ async def sort(room_id: str) -> list:
 
     return [
         mongo_to_dict(equipment)
-        async for equipment in equipment_collection.find({"additional": {"room_id": str(room_id)}})
+        async for equipment in equipment_collection.find(
+            {"additional": {"room_id": str(room_id)}}
+        )
     ]

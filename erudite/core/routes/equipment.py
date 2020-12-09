@@ -36,19 +36,21 @@ async def find_equipment(equipment_id: str):
     # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 
-    if id:
-        # Check if equipment with specified ObjectId is in the database
-        equipment = await equipment.get(id)
-        if equipment:
-            logger.info(f"Equipment {equipment_id}: {equipment}")
-            return ResponseModel(200, mongo_to_dict(equipment), "Equipment returned successfully")
-        else:
-            message = "This equipment is not found"
-            logger.info(message)
-            return ErrorResponseModel(404, message)
-    else:
+    if not id:
         message = "ObjectId is written in the wrong format"
         return ErrorResponseModel(400, message)
+
+    # Check if equipment with specified ObjectId is in the database
+    equipment_obj = await equipment.get(id)
+    if equipment_obj:
+        logger.info(f"Equipment {equipment_id}: {equipment_obj}")
+        return ResponseModel(
+            200, mongo_to_dict(equipment_obj), "Equipment returned successfully"
+        )
+    else:
+        message = "This equipment is not found"
+        logger.info(message)
+        return ErrorResponseModel(404, message)
 
 
 @router.post(
@@ -63,11 +65,12 @@ async def create_equipment(equipment: equipment.Equipment):
     if await equipment.get_by_name(equipment.name):
         message = f"Equipment with name: '{equipment.name}'  -  already exists in the database"
         logger.info(message)
-        return ErrorResponseModel(403, message)
-    else:
-        new_equipment = await equipment.add(equipment)
-        logger.info(f"Equipment: {equipment.name}  -  added to the database")
-        return ResponseModel(201, new_equipment, "Equipment added successfully")
+        return ErrorResponseModel(409, message)
+
+    new_equipment = await equipment.add(equipment)
+    logger.info(f"Equipment: {equipment.name}  -  added to the database")
+
+    return ResponseModel(201, new_equipment, "Equipment added successfully")
 
 
 @router.delete(
@@ -81,20 +84,20 @@ async def delete_equipment(equipment_id: str):
     # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 
-    if id:
-        if await equipment.get(id):
-            await equipment.remove(id)
-            message = f"Equipment: {equipment_id}  -  deleted from the database"
-            logger.info(message)
-            return ResponseModel(200, message, "Equipment deleted successfully")
-        # Check if equipment with specified ObjectId is in the database
-        else:
-            message = f"Equipment: {equipment_id}  -  not found in the database"
-            logger.info(message)
-            return ErrorResponseModel(404, message)
-    else:
+    if not id:
         message = "ObjectId is written in the wrong format"
         return ErrorResponseModel(400, message)
+
+    if await equipment.get(id):
+        await equipment.remove(id)
+        message = f"Equipment: {equipment_id}  -  deleted from the database"
+        logger.info(message)
+        return ResponseModel(200, message, "Equipment deleted successfully")
+    # Check if equipment with specified ObjectId is in the database
+    else:
+        message = f"Equipment: {equipment_id}  -  not found in the database"
+        logger.info(message)
+        return ErrorResponseModel(404, message)
 
 
 @router.patch(
@@ -108,20 +111,20 @@ async def patch_equipment(equipment_id: str, new_values: dict) -> str:
     # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 
-    if id:
-        if await equipment.get(id):
-            await equipment.patch_additional(id, new_values)
-            message = f"Equipment: {equipment_id}  -  pached"
-            logger.info(message)
-            return ResponseModel(200, message, "Equipment patched successfully")
-        # Check if equipment with specified ObjectId is in the database
-        else:
-            message = f"Equipment: {equipment_id}  -  not found in the database"
-            logger.info(message)
-            return ErrorResponseModel(404, message)
-    else:
+    if not id:
         message = "ObjectId is written in the wrong format"
         return ErrorResponseModel(400, message)
+
+    if await equipment.get(id):
+        await equipment.patch_additional(id, new_values)
+        message = f"Equipment: {equipment_id}  -  pached"
+        logger.info(message)
+        return ResponseModel(200, message, "Equipment patched successfully")
+    # Check if equipment with specified ObjectId is in the database
+    else:
+        message = f"Equipment: {equipment_id}  -  not found in the database"
+        logger.info(message)
+        return ErrorResponseModel(404, message)
 
 
 @router.put(
@@ -135,19 +138,19 @@ async def update_equipment(equipment_id: str, new_values: equipment.Equipment):
     # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 
-    if id:
-        if await equipment.get(id):
-            await equipment.remove(id)
-            await equipment.add_empty(id)
-            await equipment.patch_all(id, new_values)
-            message = f"Equipment: {equipment_id}  -  updated"
-            logger.info(message)
-            return ResponseModel(200, message, "Equipment updated successfully")
-        # Check if equipment with specified ObjectId is in the database
-        else:
-            message = f"Equipment: {equipment_id}  -  not found in the database"
-            logger.info(message)
-            return ErrorResponseModel(404, message)
-    else:
+    if not id:
         message = "ObjectId is written in the wrong format"
         return ErrorResponseModel(400, message)
+
+    if await equipment.get(id):
+        await equipment.remove(id)
+        await equipment.add_empty(id)
+        await equipment.patch_all(id, new_values)
+        message = f"Equipment: {equipment_id}  -  updated"
+        logger.info(message)
+        return ResponseModel(200, message, "Equipment updated successfully")
+    # Check if equipment with specified ObjectId is in the database
+    else:
+        message = f"Equipment: {equipment_id}  -  not found in the database"
+        logger.info(message)
+        return ErrorResponseModel(404, message)

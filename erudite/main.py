@@ -46,10 +46,14 @@ def custom_openapi():
     openapi_schema = get_openapi(
         title="Erudite",
         version="1.0.0",
-        description=("Erudite – db of rooms, equipment, disciplines and stuff in MIEM. Kinda Google AdminSDK"),
+        description=(
+            "Erudite – db of rooms, equipment, disciplines and stuff in MIEM. Kinda Google AdminSDK"
+        ),
         routes=app.routes,
     )
-    openapi_schema["info"]["x-logo"] = {"url": "https://avatars2.githubusercontent.com/u/64712541"}
+    openapi_schema["info"]["x-logo"] = {
+        "url": "https://avatars2.githubusercontent.com/u/64712541"
+    }
 
     app.openapi_schema = openapi_schema
     return app.openapi_schema

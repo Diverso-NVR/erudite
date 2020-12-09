@@ -1,5 +1,4 @@
-from pydantic import BaseModel, Field
-from typing import List, Dict
+from pydantic import BaseModel
 import motor.motor_asyncio
 from fastapi.responses import JSONResponse
 

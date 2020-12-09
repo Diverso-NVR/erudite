@@ -16,7 +16,9 @@ logger = logging.getLogger("erudite")
     "/lessons",
     tags=["lessons"],
     summary="Get all lessons or lesson by it's ruz id",
-    description=("Get a list of all lessons in the database, or a lesson by it's ruz iz, if provided"),
+    description=(
+        "Get a list of all lessons in the database, or a lesson by it's ruz iz, if provided"
+    ),
     response_model=Response,
 )
 async def get_lessons(
@@ -31,7 +33,9 @@ async def get_lessons(
             "All lessons returned successfully",
         )
 
-    lessons_res = await lessons.get_filtered_by_name_and_time(ruz_auditorium, fromdate, todate)
+    lessons_res = await lessons.get_filtered_by_name_and_time(
+        ruz_auditorium, fromdate, todate
+    )
 
     return ResponseModel(200, lessons_res, "Filtered lessons returned successfully")
 
@@ -44,13 +48,13 @@ async def get_lessons(
     response_model=Response,
 )
 async def get_lesson_by_id(lesson_id: str):
-    # Проверка на правильность ObjectId
+    # Check if ObjectId is in the right format
     id = check_ObjectId(lesson_id)
     if not id:
         message = "ObjectId is written in the wrong format"
         return ErrorResponseModel(400, message)
 
-    # Проверка на наличие правилно введенного ObjectId в БД
+    # Check if lesson with specified ObjectId is in the database
     lesson = await lessons.get_by_id(id)
     if lesson:
         logger.info(f"Lesson {lesson_id}: {lesson}")

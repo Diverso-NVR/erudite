@@ -19,17 +19,29 @@ class Lesson(BaseModel):
         description="Building in which room is located",
         example="Таллинская ул., д, 34",
     )
-    ruz_building_oid: int = Field(..., description="Building id in which room is located", example=2211)
-    ruz_discipline: str = Field(..., description="Discipline name in RUZ", example="Физика")
-    ruz_discipline_oid: int = Field(..., description="Discipline id in RUZ", example=1337)
+    ruz_building_oid: int = Field(
+        ..., description="Building id in which room is located", example=2211
+    )
+    ruz_discipline: str = Field(
+        ..., description="Discipline name in RUZ", example="Физика"
+    )
+    ruz_discipline_oid: int = Field(
+        ..., description="Discipline id in RUZ", example=1337
+    )
     ruz_kind_of_work: str = Field(
         ...,
         description="Lesson type name from RUZ",
         example="Практическое занятие on-line",
     )
-    ruz_kind_of_work_oid: int = Field(..., description="Lesson type id from RUZ", example=969)
-    ruz_lecturer_title: str = Field(..., description="Lecturer name from RUZ", example="Даниил Мирталибов")
-    ruz_lecturer_email: str = Field(..., description="Lecturer email from RUZ", example="dimirtalibov@hse.ru")
+    ruz_kind_of_work_oid: int = Field(
+        ..., description="Lesson type id from RUZ", example=969
+    )
+    ruz_lecturer_title: str = Field(
+        ..., description="Lecturer name from RUZ", example="Даниил Мирталибов"
+    )
+    ruz_lecturer_email: str = Field(
+        ..., description="Lecturer email from RUZ", example="dimirtalibov@hse.ru"
+    )
     ruz_lesson_oid: int = Field(..., description="Lesson id from RUZ", example=7735895)
     ruz_url: str = Field(
         None,
@@ -37,7 +49,9 @@ class Lesson(BaseModel):
         example="https://meet.miem.hse.ru/520",
     )
 
-    course_code: str = Field(..., description="Course code parsed from RUZ", example="Ф_Б2019_ИТСС_3")
+    course_code: str = Field(
+        ..., description="Course code parsed from RUZ", example="Ф_Б2019_ИТСС_3"
+    )
     gcalendar_event_id: str = Field(
         None,
         description="Google Calendar event id. Event is a copy of ruz lesson",
@@ -72,7 +86,9 @@ async def get_filtered_by_name_and_time(
 
     logger.info(f"lessons.get_filtered_by_name_and_time got filter obj: {filter_obj}")
 
-    return [mongo_to_dict(lesson) async for lesson in lessons_collection.find(filter_obj)]
+    return [
+        mongo_to_dict(lesson) async for lesson in lessons_collection.find(filter_obj)
+    ]
 
 
 async def get_by_id(lesson_id: str) -> Optional[Dict[str, Union[str, int]]]:

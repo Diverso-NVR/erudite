@@ -7,7 +7,7 @@ from ..database.models import (
     Response,
 )
 from ..database import rooms
-from ..database.utils import mongo_to_dict, check_ObjectId
+from ..database.utils import check_ObjectId
 from ..database.equipment import sort
 
 router = APIRouter()
@@ -37,19 +37,19 @@ async def find_room(room_id: str):
     # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
 
-    if id:
-        # Check if room with specified ObjectId is in the database
-        room = await rooms.get(id)
-        if room:
-            logger.info(f"Room {room_id}: {room}")
-            return ResponseModel(200, room, "Room returned successfully")
-        else:
-            message = "This room is not found"
-            logger.info(message)
-            return ErrorResponseModel(404, message)
-    else:
+    if not id:
         message = "ObjectId is written in the wrong format"
         return ErrorResponseModel(400, message)
+
+    # Check if room with specified ObjectId is in the database
+    room = await rooms.get(id)
+    if room:
+        logger.info(f"Room {room_id}: {room}")
+        return ResponseModel(200, room, "Room returned successfully")
+
+    message = "This room is not found"
+    logger.info(message)
+    return ErrorResponseModel(404, message)
 
 
 @router.post(
@@ -64,11 +64,11 @@ async def create_room(room: rooms.Room):
     if await rooms.get_by_name(room.name):
         message = f"Room with name: '{room.name}'  -  already exists in the database"
         logger.info(message)
-        return ErrorResponseModel(403, message)
-    else:
-        new_room = await rooms.add(room)
-        logger.info(f"Room: {room.name}  -  added to the database")
-        return ResponseModel(201, new_room, "Room added successfully")
+        return ErrorResponseModel(409, message)
+
+    new_room = await rooms.add(room)
+    logger.info(f"Room: {room.name}  -  added to the database")
+    return ResponseModel(201, new_room, "Room added successfully")
 
 
 @router.delete(
@@ -82,20 +82,20 @@ async def delete_room(room_id: str):
     # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
 
-    if id:
-        if await rooms.get(id):
-            await rooms.remove(id)
-            message = f"Room: {room_id}  -  deleted from the database"
-            logger.info(message)
-            return ResponseModel(200, message, "Room deleted successfully")
-        # Check if room with specified ObjectId is in the database
-        else:
-            message = f"Room: {room_id}  -  not found in the database"
-            logger.info(message)
-            return ErrorResponseModel(404, message)
-    else:
+    if not id:
         message = "ObjectId is written in the wrong format"
         return ErrorResponseModel(400, message)
+
+    # Check if room with specified ObjectId is in the database
+    if await rooms.get(id):
+        await rooms.remove(id)
+        message = f"Room: {room_id}  -  deleted from the database"
+        logger.info(message)
+        return ResponseModel(200, message, "Room deleted successfully")
+
+    message = f"Room: {room_id}  -  not found in the database"
+    logger.info(message)
+    return ErrorResponseModel(404, message)
 
 
 @router.patch(
@@ -109,20 +109,20 @@ async def patch_room(room_id: str, new_values: dict):
     # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
 
-    if id:
-        if await rooms.get(id):
-            await rooms.patch_additional(id, new_values)
-            message = f"Room: {room_id}  -  pached"
-            logger.info(message)
-            return ResponseModel(200, message, "Room patched successfully")
-        # Check if room with specified ObjectId is in the database
-        else:
-            message = f"Room: {room_id}  -  not found in the database"
-            logger.info(message)
-            return ErrorResponseModel(404, message)
-    else:
+    if not id:
         message = "ObjectId is written in the wrong format"
         return ErrorResponseModel(400, message)
+
+    if await rooms.get(id):
+        await rooms.patch_additional(id, new_values)
+        message = f"Room: {room_id}  -  pached"
+        logger.info(message)
+        return ResponseModel(200, message, "Room patched successfully")
+    # Check if room with specified ObjectId is in the database
+    else:
+        message = f"Room: {room_id}  -  not found in the database"
+        logger.info(message)
+        return ErrorResponseModel(404, message)
 
 
 @router.put(
@@ -136,22 +136,22 @@ async def update_room(room_id: str, new_values: rooms.Room):
     # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
 
-    if id:
-        if await rooms.get(id):
-            await rooms.remove(id)
-            await rooms.add_empty(id)
-            await rooms.patch_all(id, new_values)
-            message = f"Room: {room_id}  -  updated"
-            logger.info(message)
-            return ResponseModel(200, message, "Room updated successfully")
-        # Check if room with specified ObjectId is in the database
-        else:
-            message = f"Room: {room_id}  -  not found in the database"
-            logger.info(message)
-            return ErrorResponseModel(404, message)
-    else:
+    if not id:
         message = "ObjectId is written in the wrong format"
         return ErrorResponseModel(400, message)
+
+    if await rooms.get(id):
+        await rooms.remove(id)
+        await rooms.add_empty(id)
+        await rooms.patch_all(id, new_values)
+        message = f"Room: {room_id}  -  updated"
+        logger.info(message)
+        return ResponseModel(200, message, "Room updated successfully")
+    # Check if room with specified ObjectId is in the database
+    else:
+        message = f"Room: {room_id}  -  not found in the database"
+        logger.info(message)
+        return ErrorResponseModel(404, message)
 
 
 @router.get(
@@ -165,17 +165,17 @@ async def list_room_equipments(room_id: str):
     # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
 
-    if id:
-        room = await rooms.get(id)
-        if room:
-            data = await sort(id)
-            print(data)
-            return ResponseModel(200, data, "Room updated successfully")
-        # Check if equipment with specified room_id is in the database
-        else:
-            message = "This room is not found"
-            logger.info(message)
-            return ErrorResponseModel(404, message)
-    else:
+    if not id:
         message = "ObjectId is written in the wrong format"
         return ErrorResponseModel(400, message)
+
+    room = await rooms.get(id)
+    if room:
+        data = await sort(id)
+        print(data)
+        return ResponseModel(200, data, "Room updated successfully")
+    # Check if equipment with specified room_id is in the database
+    else:
+        message = "This room is not found"
+        logger.info(message)
+        return ErrorResponseModel(404, message)
