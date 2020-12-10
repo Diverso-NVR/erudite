@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Dict
+from typing import Dict, Optional, List, Union
 
 from ..database.models import db
 from ..database.utils import mongo_to_dict
@@ -12,16 +12,15 @@ equipment_collection = db.get_collection("equipment")
 class Equipment(BaseModel):
     name: str
     type: str
-    additional: Dict[str, str] = Field(...)
 
 
-async def get_all() -> list:
+async def get_all() -> List[Dict[str, Union[str, int]]]:
     """ Get all equipment from db """
 
     return [mongo_to_dict(equipment) async for equipment in equipment_collection.find()]
 
 
-async def get(equipment_id: str) -> Equipment:
+async def get(equipment_id: str) -> Optional[Dict[str, Union[str, int]]]:
     """ Get equipment by its db id """
 
     equipment = await equipment_collection.find_one({"_id": equipment_id})
@@ -29,7 +28,7 @@ async def get(equipment_id: str) -> Equipment:
         return mongo_to_dict(equipment)
 
 
-async def get_by_name(name: str) -> dict:
+async def get_by_name(name: str) -> Optional[Dict[str, Union[str, int]]]:
     """ Get equipment by its name """
 
     equipment = await equipment_collection.find_one({"name": name})
@@ -37,12 +36,10 @@ async def get_by_name(name: str) -> dict:
         return mongo_to_dict(equipment)
 
 
-async def add(equipment: Equipment) -> dict:
+async def add(equipment: dict) -> Optional[Dict[str, Union[str, int]]]:
     """ Add equipment to db """
 
-    equipment_added = await equipment_collection.insert_one(
-        equipment.dict(by_alias=True)
-    )
+    equipment_added = await equipment_collection.insert_one(equipment)
     new = await equipment_collection.find_one({"_id": equipment_added.inserted_id})
     return mongo_to_dict(new)
 
@@ -62,23 +59,15 @@ async def remove(equipment_id: str):
 async def patch_additional(equipment_id: str, new_values: dict):
     """ Patch equipment """
 
-    await equipment_collection.update_one(
-        {"_id": equipment_id}, {"$set": {"additional": new_values}}
-    )
+    await equipment_collection.update_one({"_id": equipment_id}, {"$set": new_values})
 
 
-async def patch_all(equipment_id: str, new_values: Equipment):
+async def patch_all(equipment_id: str, new_values: dict):
     """ Patch equipment """
 
     await equipment_collection.update_one(
         {"_id": equipment_id},
-        {
-            "$set": {
-                "name": new_values.name,
-                "type": new_values.type,
-                "additional": mongo_to_dict(new_values.additional),
-            }
-        },
+        {"$set": new_values},
     )
 
 
@@ -87,7 +76,5 @@ async def sort(room_id: str) -> list:
 
     return [
         mongo_to_dict(equipment)
-        async for equipment in equipment_collection.find(
-            {"additional": {"room_id": str(room_id)}}
-        )
+        async for equipment in equipment_collection.find({"room_id": str(room_id)})
     ]

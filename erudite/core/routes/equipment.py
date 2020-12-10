@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 import logging
 
 from ..database.models import ErrorResponseModel, ResponseModel, Response
@@ -44,9 +44,7 @@ async def find_equipment(equipment_id: str):
     equipment_obj = await equipment.get(id)
     if equipment_obj:
         logger.info(f"Equipment {equipment_id}: {equipment_obj}")
-        return ResponseModel(
-            200, mongo_to_dict(equipment_obj), "Equipment returned successfully"
-        )
+        return ResponseModel(200, mongo_to_dict(equipment_obj), "Equipment returned successfully")
     else:
         message = "This equipment is not found"
         logger.info(message)
@@ -60,15 +58,15 @@ async def find_equipment(equipment_id: str):
     description="Create an equipment specified by it's ObjectId",
     response_model=Response,
 )
-async def create_equipment(equipment: equipment.Equipment):
+async def create_equipment(val_equipment: equipment.Equipment, request: Request):
     # Check if equipment with specified ObjectId is in the database
-    if await equipment.get_by_name(equipment.name):
-        message = f"Equipment with name: '{equipment.name}'  -  already exists in the database"
+    if await equipment.get_by_name(val_equipment.name):
+        message = f"Equipment with name: '{val_equipment.name}'  -  already exists in the database"
         logger.info(message)
         return ErrorResponseModel(409, message)
 
-    new_equipment = await equipment.add(equipment)
-    logger.info(f"Equipment: {equipment.name}  -  added to the database")
+    new_equipment = await equipment.add(await request.json())
+    logger.info(f"Equipment: {val_equipment.name}  -  added to the database")
 
     return ResponseModel(201, new_equipment, "Equipment added successfully")
 
@@ -134,7 +132,7 @@ async def patch_equipment(equipment_id: str, new_values: dict) -> str:
     description="Deletes old atributes of equipment and puts in new ones",
     response_model=Response,
 )
-async def update_equipment(equipment_id: str, new_values: equipment.Equipment):
+async def update_equipment(equipment_id: str, new_values: equipment.Equipment, request: Request):
     # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 
@@ -145,7 +143,7 @@ async def update_equipment(equipment_id: str, new_values: equipment.Equipment):
     if await equipment.get(id):
         await equipment.remove(id)
         await equipment.add_empty(id)
-        await equipment.patch_all(id, new_values)
+        await equipment.patch_all(id, await request.json())
         message = f"Equipment: {equipment_id}  -  updated"
         logger.info(message)
         return ResponseModel(200, message, "Equipment updated successfully")
