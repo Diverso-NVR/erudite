@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Dict, Optional, List, Union
+from typing import Dict, List, Union
 
 from ..database.models import db
 from ..database.utils import mongo_to_dict
