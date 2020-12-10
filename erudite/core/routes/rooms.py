@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 import logging
 
 from ..database.models import (
@@ -59,14 +59,14 @@ async def find_room(room_id: str):
     description="Create a room specified by it's ObjectId",
     response_model=Response,
 )
-async def create_room(room: rooms.Room):
+async def create_room(room: rooms.Room, request: Request):
     # Check if room with specified ObjectId is in the database
     if await rooms.get_by_name(room.name):
         message = f"Room with name: '{room.name}'  -  already exists in the database"
         logger.info(message)
         return ErrorResponseModel(409, message)
 
-    new_room = await rooms.add(room)
+    new_room = await rooms.add(await request.json())
     logger.info(f"Room: {room.name}  -  added to the database")
     return ResponseModel(201, new_room, "Room added successfully")
 
@@ -113,8 +113,12 @@ async def patch_room(room_id: str, new_values: dict):
         message = "ObjectId is written in the wrong format"
         return ErrorResponseModel(400, message)
 
+    if not new_values:
+        message = "Please fill the request body"
+        return ErrorResponseModel(400, message)
+
     if await rooms.get(id):
-        await rooms.patch_additional(id, new_values)
+        await rooms.patch(id, new_values)
         message = f"Room: {room_id}  -  pached"
         logger.info(message)
         return ResponseModel(200, message, "Room patched successfully")
@@ -132,7 +136,7 @@ async def patch_room(room_id: str, new_values: dict):
     description="Deletes old atributes of room specified by it's ObjectId and puts in new ones",
     response_model=Response,
 )
-async def update_room(room_id: str, new_values: rooms.Room):
+async def update_room(room_id: str, new_values: rooms.Room, request: Request):
     # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
 
@@ -140,10 +144,14 @@ async def update_room(room_id: str, new_values: rooms.Room):
         message = "ObjectId is written in the wrong format"
         return ErrorResponseModel(400, message)
 
+    if not new_values:
+        message = "Please fill the request body"
+        return ErrorResponseModel(400, message)
+
     if await rooms.get(id):
         await rooms.remove(id)
         await rooms.add_empty(id)
-        await rooms.patch_all(id, new_values)
+        await rooms.put(id, await request.json())
         message = f"Room: {room_id}  -  updated"
         logger.info(message)
         return ResponseModel(200, message, "Room updated successfully")
