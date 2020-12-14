@@ -26,7 +26,7 @@ logger = logging.getLogger("erudite")
 async def list_rooms(
     name: Optional[str] = None,
 ):
-    if name == None:
+    if name is None:
         return ResponseModel(200, await rooms.get_all(), "Rooms returned successfully")
 
     room = await rooms.get_by_name(name)
