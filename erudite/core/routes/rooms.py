@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request
 import logging
+from typing import Optional
 
 from ..database.models import (
     ErrorResponseModel,
@@ -19,11 +20,23 @@ logger = logging.getLogger("erudite")
     "/rooms",
     tags=["rooms"],
     summary="Get all rooms",
-    description="Get a list of all rooms in the database",
+    description="Get a list of all rooms in the database or a room by it's name, if provided",
     response_model=Response,
 )
-async def list_rooms():
-    return ResponseModel(200, await rooms.get_all(), "Rooms returned successfully")
+async def list_rooms(
+    name: Optional[str] = None,
+):
+    if name == None:
+        return ResponseModel(200, await rooms.get_all(), "Rooms returned successfully")
+
+    room = await rooms.get_by_name(name)
+    if room:
+        logger.info(f"Room {name}: {room}")
+        return ResponseModel(200, room, "Room returned successfully")
+
+    message = "This room is not found"
+    logger.info(message)
+    return ErrorResponseModel(404, message)
 
 
 @router.get(
