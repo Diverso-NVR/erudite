@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request
 import logging
+from typing import Optional
 
 from ..database.models import ErrorResponseModel, ResponseModel, Response
 from ..database.utils import mongo_to_dict, check_ObjectId
@@ -14,15 +15,27 @@ logger = logging.getLogger("erudite")
     "/equipment",
     tags=["equipment"],
     summary="Get equipment",
-    description="Get a list of equipment in the database",
+    description="Get a list of equipment in the database or an equipment by it's name, if provided",
     response_model=Response,
 )
-async def list_equipments():
-    return ResponseModel(
-        200,
-        await equipment.get_all(),
-        "Equipment returned successfully",
-    )
+async def list_equipments(
+    name: Optional[str] = None,
+):
+    if name == None:
+        return ResponseModel(
+            200,
+            await equipment.get_all(),
+            "Equipment returned successfully",
+        )
+
+    equipment_obj = await equipment.get_by_name(name)
+    if equipment_obj:
+        logger.info(f"Equipment {name}: {equipment_obj}")
+        return ResponseModel(200, mongo_to_dict(equipment_obj), "Equipment returned successfully")
+
+    message = "This equipment is not found"
+    logger.info(message)
+    return ErrorResponseModel(404, message)
 
 
 @router.get(
@@ -44,9 +57,7 @@ async def find_equipment(equipment_id: str):
     equipment_obj = await equipment.get(id)
     if equipment_obj:
         logger.info(f"Equipment {equipment_id}: {equipment_obj}")
-        return ResponseModel(
-            200, mongo_to_dict(equipment_obj), "Equipment returned successfully"
-        )
+        return ResponseModel(200, mongo_to_dict(equipment_obj), "Equipment returned successfully")
     else:
         message = "This equipment is not found"
         logger.info(message)
@@ -134,9 +145,7 @@ async def patch_equipment(equipment_id: str, new_values: dict) -> str:
     description="Deletes old atributes of equipment and puts in new ones",
     response_model=Response,
 )
-async def update_equipment(
-    equipment_id: str, new_values: equipment.Equipment, request: Request
-):
+async def update_equipment(equipment_id: str, new_values: equipment.Equipment, request: Request):
     # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 
