@@ -20,18 +20,18 @@ logger = logging.getLogger("erudite")
     "/rooms",
     tags=["rooms"],
     summary="Get all rooms",
-    description="Get a list of all rooms in the database or a room by it's name, if provided",
+    description="Get a list of all rooms in the database or a room by it's ruz_id, if provided",
     response_model=Response,
 )
 async def list_rooms(
-    name: Optional[str] = None,
+    ruz_id: Optional[int] = None,
 ):
-    if name is None:
+    if ruz_id is None:
         return ResponseModel(200, await rooms.get_all(), "Rooms returned successfully")
 
-    room = await rooms.get_by_name(name)
+    room = await rooms.get_by_ruz_id(ruz_id)
     if room:
-        logger.info(f"Room {name}: {room}")
+        logger.info(f"Room {ruz_id}: {room}")
         return ResponseModel(200, room, "Room returned successfully")
 
     message = "This room is not found"
@@ -74,13 +74,15 @@ async def find_room(room_id: str):
 )
 async def create_room(room: rooms.Room, request: Request):
     # Check if room with specified ObjectId is in the database
-    if await rooms.get_by_name(room.name):
-        message = f"Room with name: '{room.name}'  -  already exists in the database"
+    if await rooms.get_by_ruz_id(room.ruz_auditorium_oid):
+        message = (
+            f"Room with ruz_id: '{room.ruz_auditorium_oid}'  -  already exists in the database"
+        )
         logger.info(message)
         return ErrorResponseModel(409, message)
 
     new_room = await rooms.add(await request.json())
-    logger.info(f"Room: {room.name}  -  added to the database")
+    logger.info(f"Room with ruz_id: {room.ruz_auditorium_oid}  -  added to the database")
     return ResponseModel(201, new_room, "Room added successfully")
 
 
@@ -200,3 +202,12 @@ async def list_room_equipments(room_id: str):
         message = "This room is not found"
         logger.info(message)
         return ErrorResponseModel(404, message)
+
+
+@router.delete("/rooms")
+async def delete_all():
+
+    list_rooms = await rooms.get_all()
+
+    for room in list_rooms:
+        await rooms.remove(check_ObjectId(room["_id"]))

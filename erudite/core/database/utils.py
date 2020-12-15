@@ -17,7 +17,7 @@ def mongo_to_dict(obj):
 
 
 # Check if ObjectId is in the right format
-def check_ObjectId(id: str) -> str:
+def check_ObjectId(id: str) -> ObjectId:
     try:
         new_id = ObjectId(id)
         return new_id
