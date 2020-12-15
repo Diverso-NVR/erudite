@@ -202,12 +202,3 @@ async def list_room_equipments(room_id: str):
         message = "This room is not found"
         logger.info(message)
         return ErrorResponseModel(404, message)
-
-
-@router.delete("/rooms")
-async def delete_all():
-
-    list_rooms = await rooms.get_all()
-
-    for room in list_rooms:
-        await rooms.remove(check_ObjectId(room["_id"]))
