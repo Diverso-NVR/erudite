@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     mongo_db_name: str = Field(..., env="MONGO_DB_NAME")
 
     testing: typing.Optional[bool] = Field(env="TESTING")
+    dev: typing.Optional[bool] = Field(env="DEV", default=False)
 
     class Config:
         env_file = ".env"
