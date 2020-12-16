@@ -17,7 +17,7 @@ logger = logging.getLogger("erudite")
     tags=["lessons"],
     summary="Get all lessons or lesson by it's ruz id",
     description=(
-        "Get a list of all lessons in the database, or a lesson by it's ruz iz, if provided"
+        "Get a list of all lessons in the database, or a lessons in specified room and datetime"
     ),
     response_model=Response,
 )
