@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Dict, Optional, List, Union
 
 from ..database.models import db
@@ -8,10 +8,15 @@ from ..database.utils import mongo_to_dict
 equipment_collection = db.get_collection("equipment")
 
 
-# Class from db sources
 class Equipment(BaseModel):
-    name: str
-    type: str
+    name: str = Field(..., description="Name of the equipment", example="Server 1")
+    classroom: str = Field(
+        ...,
+        description="Name of the room where equipment is located",
+        example="Room 13",
+    )
+    ip: str = Field(..., description="IP adress of the equipment", example="192.0.2.1")
+    type: str = Field(..., description="Type of equipment", example="Server/Jetson")
 
 
 async def get_all() -> List[Dict[str, Union[str, int]]]:
