@@ -17,6 +17,11 @@ class Equipment(BaseModel):
     )
     ip: str = Field(..., description="IP adress of the equipment", example="192.0.2.1")
     type: str = Field(..., description="Type of equipment", example="Server/Jetson")
+    login: str = Field(..., description="Login for a camera", example="some_login")
+    password: str = Field(..., description="Password for a camera", example="some_password")
+    port: int = Field(..., description="Port of the equipment", example=8000)
+    micro_model: str = Field(..., description="Model of a microphone", example="Toshiba")
+    rtsp_addres: str = Field(..., description="RTSP adress", example="hz")
 
 
 async def get_all() -> List[Dict[str, Union[str, int]]]:
