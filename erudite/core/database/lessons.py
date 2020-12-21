@@ -76,17 +76,22 @@ async def get_filtered_by_name_and_time(
     fromdate: Optional[datetime] = None,
     todate: Optional[datetime] = None,
 ) -> Optional[Dict[str, Union[str, int]]]:
-    """ Get lesson by its ruz id """
+    """ Get lesson by its ruz name and datetime """
 
-    filter_obj = {"ruz_auditorium": ruz_auditorium}
+    filter_obj = {}
+
+    if ruz_auditorium is not None:
+        filter_obj = {"ruz_auditorium": ruz_auditorium}
     if fromdate is not None:
+        filter_obj.setdefault("date", {})
         filter_obj["date"] = {
             "$gte": str(fromdate.date()),
         }
-        filter_obj["start_time"] = {"$gte": str(fromdate.time())[:5]}
+        filter_obj["start_time"] = {"$gte": str(fromdate.time())}
     if todate is not None:
+        filter_obj.setdefault("date", {})
         filter_obj["date"]["$lte"] = str(todate.date())
-        filter_obj["end_time"] = {"$lte": str(todate.time())}
+        filter_obj["start_time"] = {"$lte": str(todate.time())}
 
     logger.info(f"lessons.get_filtered_by_name_and_time got filter obj: {filter_obj}")
 

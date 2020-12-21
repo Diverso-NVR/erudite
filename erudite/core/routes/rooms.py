@@ -75,14 +75,14 @@ async def find_room(room_id: str):
 async def create_room(room: rooms.Room, request: Request):
     # Check if room with specified ObjectId is in the database
     if await rooms.get_by_ruz_id(room.ruz_auditorium_oid):
-        message = (
-            f"Room with ruz_id: '{room.ruz_auditorium_oid}'  -  already exists in the database"
-        )
+        message = f"Room with ruz_id: '{room.ruz_auditorium_oid}' already exists in the database"
         logger.info(message)
         return ErrorResponseModel(409, message)
 
     new_room = await rooms.add(await request.json())
-    logger.info(f"Room with ruz_id: {room.ruz_auditorium_oid}  -  added to the database")
+    logger.info(
+        f"Room with ruz_id: {room.ruz_auditorium_oid}  -  added to the database"
+    )
     return ResponseModel(201, new_room, "Room added successfully")
 
 
