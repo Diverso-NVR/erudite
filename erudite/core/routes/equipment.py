@@ -131,7 +131,7 @@ async def patch_equipment(equipment_id: str, new_values: dict) -> str:
         return ErrorResponseModel(400, message)
 
     if await equipment.get(id):
-        await equipment.patch_additional(id, new_values)
+        await equipment.patch(id, new_values)
         message = f"Equipment: {equipment_id}  -  pached"
         logger.info(message)
         return ResponseModel(200, message, "Equipment patched successfully")
@@ -162,7 +162,7 @@ async def update_equipment(
     if await equipment.get(id):
         await equipment.remove(id)
         await equipment.add_empty(id)
-        await equipment.patch_all(id, await request.json())
+        await equipment.patch(id, await request.json())
         message = f"Equipment: {equipment_id}  -  updated"
         logger.info(message)
         return ResponseModel(200, message, "Equipment updated successfully")
