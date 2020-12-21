@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Dict, Optional, List, Union
 
 from ..database.models import db
@@ -8,10 +8,24 @@ from ..database.utils import mongo_to_dict
 equipment_collection = db.get_collection("equipment")
 
 
-# Class from db sources
 class Equipment(BaseModel):
-    name: str
-    type: str
+    name: str = Field(..., description="Name of the equipment", example="Server 1")
+    classroom: str = Field(
+        None,
+        description="Name of the room where equipment is located",
+        example="Room 13",
+    )
+    ip: str = Field(None, description="IP adress of the equipment", example="192.0.2.1")
+    type: str = Field(..., description="Type of equipment", example="Server/Jetson")
+    login: str = Field(None, description="Login for a camera", example="some_login")
+    password: str = Field(
+        None, description="Password for a camera", example="some_password"
+    )
+    port: int = Field(None, description="Port of the equipment", example=8000)
+    micro_model: str = Field(
+        None, description="Model of a microphone", example="Toshiba"
+    )
+    rtsp_addres: str = Field(None, description="RTSP adress", example="hz")
 
 
 async def get_all() -> List[Dict[str, Union[str, int]]]:
@@ -56,13 +70,7 @@ async def remove(equipment_id: str):
     await equipment_collection.delete_one({"_id": equipment_id})
 
 
-async def patch_additional(equipment_id: str, new_values: dict):
-    """ Patch equipment """
-
-    await equipment_collection.update_one({"_id": equipment_id}, {"$set": new_values})
-
-
-async def patch_all(equipment_id: str, new_values: dict):
+async def patch(equipment_id: str, new_values: dict):
     """ Patch equipment """
 
     await equipment_collection.update_one(
