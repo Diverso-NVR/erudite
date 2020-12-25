@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field
 
 
 class Record(BaseModel):
+    id: str = Field(...)
+
     room_id: str = Field(...)
     room_name: str = Field(...)
     date: str = Field(..., description="Date of record", example="2020-09-01")

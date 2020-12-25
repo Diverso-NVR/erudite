@@ -10,6 +10,8 @@ rooms_collection = db.get_collection("rooms")
 
 
 class Room(BaseModel):
+    id: str = Field(...)
+
     ruz_type_of_auditorium_oid: int = Field(
         ..., description="Room type in RUZ", example=1019
     )
