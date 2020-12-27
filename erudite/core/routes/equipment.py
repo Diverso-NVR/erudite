@@ -173,7 +173,9 @@ async def patch_equipment(equipment_id: str, new_values: equipment.Equipment) ->
     response_model=Message,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
-async def update_equipment(equipment_id: str, new_values: equipment.Equipment, request: Request):
+async def update_equipment(
+    equipment_id: str, new_values: equipment.Equipment, request: Request
+):
     # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 
