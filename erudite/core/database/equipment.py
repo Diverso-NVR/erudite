@@ -95,3 +95,12 @@ async def sort(room_id: str) -> list:
         mongo_to_dict(equipment)
         async for equipment in equipment_collection.find({"room_id": str(room_id)})
     ]
+
+
+async def sort_many(attributes: dict) -> list:
+    """ Get equipment by its db attributes """
+
+    return [
+        mongo_to_dict(equipment)
+        async for equipment in equipment_collection.find(attributes)
+    ]
