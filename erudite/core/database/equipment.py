@@ -11,9 +11,7 @@ equipment_collection = db.get_collection("equipment")
 class Equipment(BaseModel):
     id: str = Field(...)
 
-    name: str = Field(
-        ..., description="Name of the equipment", example="Камера 306 на доску"
-    )
+    name: str = Field(..., description="Name of the equipment", example="Камера 306 на доску")
     type: str = Field(..., description="Type of equipment", example="ONVIF-camera")
 
     room_name: str = Field(
@@ -26,9 +24,7 @@ class Equipment(BaseModel):
         description="Room id in erudite, it provides mto relationship to room",
     )
 
-    ip: str = Field(
-        None, description="IP adress of the equipment", example="172.18.191.62"
-    )
+    ip: str = Field(None, description="IP adress of the equipment", example="172.18.191.62")
     port: int = Field(None, description="Port of the equipment", example=80)
     rtsp_main: str = Field(
         None,
@@ -95,3 +91,9 @@ async def sort(room_id: str) -> list:
         mongo_to_dict(equipment)
         async for equipment in equipment_collection.find({"room_id": str(room_id)})
     ]
+
+
+async def sort_many(attributes: dict) -> list:
+    """ Get equipment by its db attributes """
+
+    return [mongo_to_dict(equipment) async for equipment in equipment_collection.find(attributes)]

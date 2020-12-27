@@ -22,18 +22,41 @@ logger = logging.getLogger("erudite")
 )
 async def list_equipments(
     name: Optional[str] = None,
+    type: Optional[str] = None,
+    room_name: Optional[str] = None,
+    room_id: Optional[str] = None,
+    ip: Optional[str] = None,
+    port: Optional[int] = None,
+    rtsp_main: Optional[str] = None,
 ):
-    if name is None:
+    if (
+        name is None
+        and type is None
+        and room_name is None
+        and room_id is None
+        and ip is None
+        and port is None
+        and rtsp_main is None
+    ):
         return await equipment.get_all()
 
-    equipment_obj = await equipment.get_by_name(name)
-    if equipment_obj:
-        logger.info(f"Equipment {name}: {equipment_obj}")
-        return [equipment_obj]
+    all_args = locals()
+    args = {}
+    for element in all_args:
+        if all_args[element] is not None:
+            args[element] = all_args[element]
+    del all_args
 
-    message = f"Equipment {name} not found"
-    logger.info(message)
-    return JSONResponse(status_code=404, content={"message": message})
+    equipment_found = await equipment.sort_many(args)
+    return equipment_found
+    # equipment_obj = await equipment.get_by_name(name)
+    # if equipment_obj:
+    # logger.info(f"Equipment {name}: {equipment_obj}")
+    # return [equipment_obj]
+
+    # message = f"Equipment {name} not found"
+    # logger.info(message)
+    # return JSONResponse(status_code=404, content={"message": message})
 
 
 @router.get(
@@ -150,9 +173,7 @@ async def patch_equipment(equipment_id: str, new_values: equipment.Equipment) ->
     response_model=Message,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
-async def update_equipment(
-    equipment_id: str, new_values: equipment.Equipment, request: Request
-):
+async def update_equipment(equipment_id: str, new_values: equipment.Equipment, request: Request):
     # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 
