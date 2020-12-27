@@ -1,8 +1,10 @@
-from fastapi import APIRouter
 import logging
-from typing import Optional
+from typing import Optional, List
 
-from ..database.models import ErrorResponseModel, ResponseModel, Response
+from fastapi import APIRouter
+from fastapi.responses import JSONResponse
+
+from ..database.models import Message
 from ..database.utils import check_ObjectId
 from ..database import disciplines
 
@@ -18,25 +20,21 @@ logger = logging.getLogger("erudite")
     description=(
         "Get a list of all disciplines in the database, or a discipline by it's course code"
     ),
-    response_model=Response,
+    response_model=List[disciplines.Discipline],
+    responses={404: {"model": Message}},
 )
 async def get_disciplines(course_code: Optional[str] = None):
     if course_code is None:
-        return ResponseModel(
-            200,
-            await disciplines.get_all(),
-            "Disciplines returned successfully",
-        )
+        return await disciplines.get_all()
 
     discipline = await disciplines.get_by_cource_code(course_code)
     if discipline:
         logger.info(f"Discipline {course_code}: {discipline}")
-        return ResponseModel(200, discipline, "Discipline returned successfully")
-    # Check if discipline with specified ObjectId is in the database
+        return [discipline]
     else:
         message = "This discipline is not found"
         logger.info(message)
-        return ErrorResponseModel(404, message)
+        return JSONResponse(status_code=404, content={"message": message})
 
 
 @router.get(
@@ -44,7 +42,8 @@ async def get_disciplines(course_code: Optional[str] = None):
     tags=["disciplines"],
     summary="Get a discipline",
     description="Get a discipline specified by it's ObjectId",
-    response_model=Response,
+    response_model=disciplines.Discipline,
+    responses={404: {"model": Message}, 400: {"model": Message}},
 )
 async def find_discipline(discipline_id: str):
     # Check if ObjectId is in the right format
@@ -52,17 +51,18 @@ async def find_discipline(discipline_id: str):
 
     # Check if discipline with specified ObjectId is in the database
     if not id:
-        message = "ObjectId is written in the wrong format"
-        return ErrorResponseModel(400, message)
+        message = "Invalid id"
+        logger.info(message)
+        return JSONResponse(status_code=404, content={"message": message})
 
     discipline = await disciplines.get(id)
     if discipline:
         logger.info(f"Discipline {discipline_id}: {discipline}")
-        return ResponseModel(200, discipline, "Discipline returned successfully")
+        return discipline
     else:
         message = "This discipline is not found"
         logger.info(message)
-        return ErrorResponseModel(404, message)
+        return JSONResponse(status_code=404, content={"message": message})
 
 
 @router.post(
@@ -71,18 +71,17 @@ async def find_discipline(discipline_id: str):
     tags=["disciplines"],
     summary="Create discipline",
     description="Create discipline specified by it's ObjectId",
-    response_model=Response,
+    response_model=disciplines.Discipline,
+    responses={409: {"model": Message}},
 )
 async def add_discipline(discipline: disciplines.Discipline):
     # Check if discipline with specified ObjectId is in the database
     if await disciplines.get_by_cource_code(discipline.course_code):
         message = f"Discipline with code: {discipline.course_code} already exists in the database"
         logger.info(message)
-        return ErrorResponseModel(409, message)
+        return JSONResponse(status_code=409, content={"message": message})
 
-    new_discipline = await disciplines.add(discipline)
-
-    return ResponseModel(201, new_discipline, "Discipline added")
+    return await disciplines.add(discipline)
 
 
 @router.delete(
@@ -90,7 +89,8 @@ async def add_discipline(discipline: disciplines.Discipline):
     tags=["disciplines"],
     summary="Delete discipline",
     description="Delete discipline specified by it's ObjectId",
-    response_model=Response,
+    response_model=Message,
+    responses={400: {"model": Message}, 404: {"model": Message}},
 )
 async def delete_discipline(discipline_id: str):
     # Check if ObjectId is in the right format
@@ -98,18 +98,17 @@ async def delete_discipline(discipline_id: str):
 
     if not id:
         message = "ObjectId is written in the wrong format"
-        return ErrorResponseModel(400, message)
+        return JSONResponse(status_code=400, content={"message": message})
 
     if await disciplines.get(id):
         await disciplines.remove(id)
-        message = f"Discipline: {discipline_id}  -  deleted from the database"
+        message = f"Discipline: {discipline_id} deleted from the database"
         logger.info(message)
-        return ResponseModel(200, message, "Room deleted successfully")
-    # Check if discipline with specified ObjectId is in the database
+        return {"message": "Room deleted successfully"}
     else:
-        message = f"Discipline: {discipline_id}  -  not found in the database"
+        message = f"Discipline: {discipline_id} not found in the database"
         logger.info(message)
-        return ErrorResponseModel(404, message)
+        return JSONResponse(status_code=404, content={"message": message})
 
 
 @router.put(
@@ -119,7 +118,8 @@ async def delete_discipline(discipline_id: str):
     description=(
         "Deletes old atributes of discipline specified by it's ObjectId and puts in new ones"
     ),
-    response_model=Response,
+    response_model=Message,
+    responses={400: {"model": Message}, 404: {"model": Message}},
 )
 async def update_discipline(discipline_id: str, new_values: disciplines.Discipline):
     # Check if ObjectId is in the right format
@@ -127,7 +127,7 @@ async def update_discipline(discipline_id: str, new_values: disciplines.Discipli
 
     if not id:
         message = "ObjectId is written in the wrong format"
-        return ErrorResponseModel(400, message)
+        return JSONResponse(status_code=400, content={"message": message})
 
     if await disciplines.get(id):
         await disciplines.remove(id)
@@ -137,9 +137,9 @@ async def update_discipline(discipline_id: str, new_values: disciplines.Discipli
         logger.info(
             message
         )  # Если ключа нет в обьекте, то будет добавлена новая пара ключ-значение к этому обьекту
-        return ResponseModel(200, message, "Discipline updated successfully")
-    # Check if discipline with specified ObjectId is in the database
+        return message
+
     else:
         message = f"Discipline: {discipline_id}  -  not found in the database"
         logger.info(message)
-        return ErrorResponseModel(404, message)
+        return JSONResponse(status_code=404, content={"message": message})

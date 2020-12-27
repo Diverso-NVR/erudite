@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
+
 import logging
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
-from ..database.models import ErrorResponseModel, ResponseModel, Response
+from ..database.models import Message
 from ..database.utils import check_ObjectId
 from ..database import lessons
 
@@ -19,7 +21,7 @@ logger = logging.getLogger("erudite")
     description=(
         "Get a list of all lessons in the database, or a lessons in specified room and datetime"
     ),
-    response_model=Response,
+    response_model=List[lessons.Lesson],
 )
 async def get_lessons(
     ruz_auditorium: Optional[str] = None,
@@ -27,17 +29,9 @@ async def get_lessons(
     todate: Optional[datetime] = None,
 ):
     if ruz_auditorium is None and fromdate is None and todate is None:
-        return ResponseModel(
-            200,
-            await lessons.get_all(),
-            "All lessons returned successfully",
-        )
+        return await lessons.get_all()
 
-    lessons_res = await lessons.get_filtered_by_name_and_time(
-        ruz_auditorium, fromdate, todate
-    )
-
-    return ResponseModel(200, lessons_res, "Filtered lessons returned successfully")
+    return await lessons.get_filtered_by_name_and_time(ruz_auditorium, fromdate, todate)
 
 
 @router.get(
@@ -45,24 +39,25 @@ async def get_lessons(
     tags=["lessons"],
     summary="Get a lesson",
     description="Get a lesson specified by it's ObjectId",
-    response_model=Response,
+    response_model=lessons.Lesson,
+    responses={400: {"model": Message}, 404: {"model": Message}},
 )
 async def get_lesson_by_id(lesson_id: str):
     # Check if ObjectId is in the right format
     id = check_ObjectId(lesson_id)
     if not id:
         message = "ObjectId is written in the wrong format"
-        return ErrorResponseModel(400, message)
+        return JSONResponse(status_code=400, content={"message": message})
 
     # Check if lesson with specified ObjectId is in the database
     lesson = await lessons.get_by_id(id)
     if lesson:
         logger.info(f"Lesson {lesson_id}: {lesson}")
-        return ResponseModel(200, lesson, "Lesson returned successfully")
+        return lesson
     else:
         message = "This lesson is not found"
         logger.info(message)
-        return ErrorResponseModel(404, message)
+        return JSONResponse(status_code=404, content={"message": message})
 
 
 @router.post(
@@ -71,14 +66,13 @@ async def get_lesson_by_id(lesson_id: str):
     tags=["lessons"],
     summary="Create lesson",
     description="Create lesson",
-    response_model=Response,
+    response_model=lessons.Lesson,
+    responses={409: {"model": Message}},
 )
 async def add_lesson(lesson: lessons.Lesson, request: Request):
     if await lessons.get_by_ruz_id(lesson.ruz_lesson_oid):
         message = f"Lesson with ruz id: {lesson.ruz_lesson_oid}  -  already exists in the database"
         logger.info(message)
-        return ErrorResponseModel(409, message)
+        return JSONResponse(status_code=409, content={"message": message})
 
-    new_lesson = await lessons.add(await request.json())
-
-    return ResponseModel(201, new_lesson, "Lesson added")
+    return await lessons.add(await request.json())

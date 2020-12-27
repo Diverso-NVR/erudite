@@ -12,6 +12,8 @@ logger = logging.getLogger("erudite")
 
 
 class Lesson(BaseModel):
+    id: str = Field(...)
+
     ruz_auditorium: str = Field(..., description="Room name in RUZ", example="104")
     ruz_auditorium_oid: int = Field(..., description="Room id in RUZ", example=3308)
     ruz_building: str = Field(

@@ -10,6 +10,7 @@ disciplines_collection = db.get_collection("disciplines")
 
 # Class of disciplines
 class Discipline(BaseModel):
+    id: str = Field(...)
     course_code: str = Field(...)
     groups: List[str] = Field(...)
     emails: List[str] = Field(...)

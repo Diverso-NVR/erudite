@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 import motor.motor_asyncio
-from fastapi.responses import JSONResponse
 
 from ..settings import settings
 
@@ -18,17 +17,5 @@ else:
     db = client[settings.mongo_db_name]
 
 
-# Standart class or a json responce
-class Response(BaseModel):
-    data: list
+class Message(BaseModel):
     message: str
-
-
-# Respond with a json file
-def ResponseModel(code: int, data: str, message: str) -> JSONResponse:
-    return JSONResponse(status_code=code, content={"data": data, "message": message})
-
-
-# Error respond with a json file
-def ErrorResponseModel(code: int, message: str) -> JSONResponse:
-    return JSONResponse(status_code=code, content={"message": message})

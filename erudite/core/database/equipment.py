@@ -9,23 +9,32 @@ equipment_collection = db.get_collection("equipment")
 
 
 class Equipment(BaseModel):
-    name: str = Field(..., description="Name of the equipment", example="Server 1")
-    classroom: str = Field(
+    id: str = Field(...)
+
+    name: str = Field(
+        ..., description="Name of the equipment", example="Камера 306 на доску"
+    )
+    type: str = Field(..., description="Type of equipment", example="ONVIF-camera")
+
+    room_name: str = Field(
         None,
-        description="Name of the room where equipment is located",
-        example="Room 13",
+        description="Room name where equipment is located",
+        example="306",
     )
-    ip: str = Field(None, description="IP adress of the equipment", example="192.0.2.1")
-    type: str = Field(..., description="Type of equipment", example="Server/Jetson")
-    login: str = Field(None, description="Login for a camera", example="some_login")
-    password: str = Field(
-        None, description="Password for a camera", example="some_password"
+    room_id: str = Field(
+        None,
+        description="Room id in erudite, it provides mto relationship to room",
     )
-    port: int = Field(None, description="Port of the equipment", example=8000)
-    micro_model: str = Field(
-        None, description="Model of a microphone", example="Toshiba"
+
+    ip: str = Field(
+        None, description="IP adress of the equipment", example="172.18.191.62"
     )
-    rtsp_addres: str = Field(None, description="RTSP adress", example="hz")
+    port: int = Field(None, description="Port of the equipment", example=80)
+    rtsp_main: str = Field(
+        None,
+        description="RTSP main address",
+        example="rtsp://172.18.191.62:554/Streaming/Channels/1",
+    )
 
 
 async def get_all() -> List[Dict[str, Union[str, int]]]:
