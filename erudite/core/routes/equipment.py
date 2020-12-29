@@ -16,7 +16,10 @@ logger = logging.getLogger("erudite")
     "/equipment",
     tags=["equipment"],
     summary="Get equipment",
-    description="Get a list of equipment in the database or an equipment by any of it's atributes, if provided",
+    description=(
+        "Get a list of equipment in the database or ",
+        "an equipment by any of it's atributes, if provided",
+    ),
     response_model=List[equipment.Equipment],
     responses={404: {"model": Message}},
 )
@@ -45,10 +48,10 @@ async def list_equipments(
 
     equipment_found = await equipment.sort_many(filter_args)
     if equipment_found:
-        logger.info(f"Equipment found")
+        logger.info("Equipment found")
         return equipment_found
 
-    message = f"Equipment are not found"
+    message = "Equipment are not found"
     logger.info(message)
     return JSONResponse(status_code=404, content={"message": message})
 
@@ -167,7 +170,9 @@ async def patch_equipment(equipment_id: str, new_values: equipment.Equipment) ->
     response_model=Message,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
-async def update_equipment(equipment_id: str, new_values: equipment.Equipment, request: Request):
+async def update_equipment(
+    equipment_id: str, new_values: equipment.Equipment, request: Request
+):
     # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 

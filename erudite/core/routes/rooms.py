@@ -19,7 +19,9 @@ logger = logging.getLogger("erudite")
     "/rooms",
     tags=["rooms"],
     summary="Get all rooms",
-    description="Get a list of all rooms in the database or a room by any of it's atributes, if provided",
+    description=(
+        "Get a list of all rooms in the database or a room by any of it's atributes, if provided"
+    ),
     response_model=List[rooms.Room],
     responses={404: {"model": Message}},
 )
@@ -47,7 +49,7 @@ async def list_rooms(
 
     room_found = await rooms.sort_many(filter_args)
     if room_found:
-        logger.info(f"Room found")
+        logger.info("Room found")
         return room_found
 
     message = "Rooms are not found"
@@ -98,7 +100,9 @@ async def create_room(room: rooms.Room, request: Request):
         return JSONResponse(status_code=409, content={"message": message})
 
     new_room = await rooms.add(await request.json())
-    logger.info(f"Room with ruz_id: {room.ruz_auditorium_oid}  -  added to the database")
+    logger.info(
+        f"Room with ruz_id: {room.ruz_auditorium_oid}  -  added to the database"
+    )
     return new_room
 
 
