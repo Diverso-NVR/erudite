@@ -86,3 +86,12 @@ async def put(room_id: ObjectId, new_values: dict):
         {"_id": room_id},
         {"$set": new_values},
     )
+
+
+async def sort_many(attributes: dict) -> list:
+    """ Get equipment by its db attributes """
+
+    return [
+        mongo_to_dict(equipment)
+        async for equipment in rooms_collection.find(attributes)
+    ]
