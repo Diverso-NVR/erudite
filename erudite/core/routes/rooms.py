@@ -8,7 +8,7 @@ from ..database.models import (
     Message,
 )
 from ..database import rooms, equipment
-from ..database.utils import check_ObjectId
+from ..database.utils import check_ObjectId, get_not_None_args
 
 router = APIRouter()
 
@@ -19,22 +19,38 @@ logger = logging.getLogger("erudite")
     "/rooms",
     tags=["rooms"],
     summary="Get all rooms",
-    description="Get a list of all rooms in the database or a room by it's ruz_id, if provided",
+    description="Get a list of all rooms in the database or a room by any of it's atributes, if provided",
     response_model=List[rooms.Room],
     responses={404: {"model": Message}},
 )
 async def list_rooms(
-    ruz_id: Optional[int] = None,
+    ruz_type_of_auditorium_oid: Optional[int] = None,
+    ruz_amount: Optional[int] = None,
+    ruz_auditorium_oid: Optional[int] = None,
+    ruz_building: Optional[str] = None,
+    ruz_building_gid: Optional[int] = None,
+    ruz_number: Optional[str] = None,
+    ruz_type_of_auditorium: Optional[str] = None,
 ):
-    if ruz_id is None:
+    if (
+        ruz_auditorium_oid is None
+        and ruz_amount is None
+        and ruz_building is None
+        and ruz_building_gid is None
+        and ruz_number is None
+        and ruz_type_of_auditorium is None
+    ):
         return await rooms.get_all()
 
-    room = await rooms.get_by_ruz_id(ruz_id)
-    if room:
-        logger.info(f"Room {ruz_id}: {room}")
-        return [room]
+    all_args = locals()
+    filter_args = get_not_None_args(all_args)
 
-    message = "This room is not found"
+    room_found = await rooms.sort_many(filter_args)
+    if room_found:
+        logger.info(f"Room found")
+        return room_found
+
+    message = "Rooms are not found"
     logger.info(message)
     return JSONResponse(status_code=404, content={"message": message})
 
@@ -82,9 +98,7 @@ async def create_room(room: rooms.Room, request: Request):
         return JSONResponse(status_code=409, content={"message": message})
 
     new_room = await rooms.add(await request.json())
-    logger.info(
-        f"Room with ruz_id: {room.ruz_auditorium_oid}  -  added to the database"
-    )
+    logger.info(f"Room with ruz_id: {room.ruz_auditorium_oid}  -  added to the database")
     return new_room
 
 
