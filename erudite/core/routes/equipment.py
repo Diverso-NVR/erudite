@@ -4,7 +4,7 @@ import logging
 from typing import Optional, List
 
 from ..database.models import Message
-from ..database.utils import check_ObjectId
+from ..database.utils import check_ObjectId, get_not_None_args
 from ..database import equipment
 
 router = APIRouter()
@@ -16,22 +16,41 @@ logger = logging.getLogger("erudite")
     "/equipment",
     tags=["equipment"],
     summary="Get equipment",
-    description="Get a list of equipment in the database or an equipment by it's name, if provided",
+    description=(
+        "Get a list of equipment in the database or an equipment by any of it's atributes, if provided"
+    ),
     response_model=List[equipment.Equipment],
     responses={404: {"model": Message}},
 )
 async def list_equipments(
     name: Optional[str] = None,
+    type: Optional[str] = None,
+    room_name: Optional[str] = None,
+    room_id: Optional[str] = None,
+    ip: Optional[str] = None,
+    port: Optional[int] = None,
+    rtsp_main: Optional[str] = None,
 ):
-    if name is None:
+    if (
+        name is None
+        and type is None
+        and room_name is None
+        and room_id is None
+        and ip is None
+        and port is None
+        and rtsp_main is None
+    ):
         return await equipment.get_all()
 
-    equipment_obj = await equipment.get_by_name(name)
-    if equipment_obj:
-        logger.info(f"Equipment {name}: {equipment_obj}")
-        return [equipment_obj]
+    all_args = locals()
+    filter_args = get_not_None_args(all_args)
 
-    message = f"Equipment {name} not found"
+    equipment_found = await equipment.sort_many(filter_args)
+    if equipment_found:
+        logger.info("Equipment found")
+        return equipment_found
+
+    message = "Equipment are not found"
     logger.info(message)
     return JSONResponse(status_code=404, content={"message": message})
 
@@ -150,9 +169,7 @@ async def patch_equipment(equipment_id: str, new_values: equipment.Equipment) ->
     response_model=Message,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
-async def update_equipment(
-    equipment_id: str, new_values: equipment.Equipment, request: Request
-):
+async def update_equipment(equipment_id: str, new_values: equipment.Equipment, request: Request):
     # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 

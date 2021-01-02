@@ -25,3 +25,15 @@ def check_ObjectId(id: str) -> ObjectId:
         message = "ObjectId is written in the wrong format"
         logger.info(message)
         return False
+
+
+# Get all arguments from a function witch are not None
+def get_not_None_args(all_args: dict) -> dict:
+    filter_list = {
+        element: all_args[element]
+        for element in all_args
+        if all_args[element] is not None
+    }
+    del all_args
+
+    return filter_list
