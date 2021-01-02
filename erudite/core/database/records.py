@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class Record(BaseModel):
-    id: str = Field(...)
+    id: str = Field(None)
 
     room_id: str = Field(...)
     room_name: str = Field(...)
