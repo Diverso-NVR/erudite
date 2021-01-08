@@ -1,6 +1,6 @@
 import logging
 from typing import Dict, Optional, List, Union
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
 
 from .models import db
@@ -73,17 +73,20 @@ async def get_all() -> List[Dict[str, Union[str, int]]]:
     return [mongo_to_dict(lesson) async for lesson in lessons_collection.find()]
 
 
-async def get_filtered_by_name_and_time(
+async def get_filtered(
     ruz_auditorium: Optional[str] = None,
+    ruz_lecturer_email: Optional[EmailStr] = None,
     fromdate: Optional[datetime] = None,
     todate: Optional[datetime] = None,
-) -> Optional[Dict[str, Union[str, int]]]:
+) -> Optional[List[Dict[str, Union[str, int]]]]:
     """ Get lesson by its ruz name and datetime """
 
     filter_obj = {}
 
     if ruz_auditorium is not None:
         filter_obj = {"ruz_auditorium": ruz_auditorium}
+    if ruz_lecturer_email is not None:
+        filter_obj = {"ruz_lecturer_email": ruz_lecturer_email}
     if fromdate is not None:
         filter_obj.setdefault("date", {})
         filter_obj["date"] = {

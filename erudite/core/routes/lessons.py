@@ -5,6 +5,8 @@ import logging
 from typing import Optional, List
 from datetime import datetime
 
+from pydantic import EmailStr
+
 from ..database.models import Message
 from ..database.utils import check_ObjectId
 from ..database import lessons
@@ -25,13 +27,14 @@ logger = logging.getLogger("erudite")
 )
 async def get_lessons(
     ruz_auditorium: Optional[str] = None,
+    ruz_lecturer_email: Optional[EmailStr] = None,
     fromdate: Optional[datetime] = None,
     todate: Optional[datetime] = None,
 ):
-    if ruz_auditorium is None and fromdate is None and todate is None:
+    if all(p is None for p in [ruz_auditorium, ruz_lecturer_email, fromdate, todate]):
         return await lessons.get_all()
 
-    return await lessons.get_filtered_by_name_and_time(ruz_auditorium, fromdate, todate)
+    return await lessons.get_filtered(ruz_auditorium, ruz_lecturer_email, fromdate, todate)
 
 
 @router.get(
