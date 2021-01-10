@@ -9,7 +9,7 @@ equipment_collection = db.get_collection("equipment")
 
 
 class Equipment(BaseModel):
-    id: str = Field(...)
+    id: str = Field(None)
 
     name: str = Field(
         ..., description="Name of the equipment", example="Камера 306 на доску"
