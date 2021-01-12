@@ -88,7 +88,6 @@ async def get_filtered(
     if ruz_lecturer_email is not None:
         filter_obj = {"ruz_lecturer_email": ruz_lecturer_email}
     if fromdate is not None:
-        filter_obj.setdefault("date", {})
         filter_obj["date"] = {
             "$gte": str(fromdate.date()),
         }
@@ -96,7 +95,9 @@ async def get_filtered(
     if todate is not None:
         filter_obj.setdefault("date", {})
         filter_obj["date"]["$lte"] = str(todate.date())
-        filter_obj["start_time"] = {"$lte": str(todate.time())}
+
+        filter_obj.setdefault("start_time", {})
+        filter_obj["start_time"]['$lte'] = str(todate.time())
 
     logger.info(f"lessons.get_filtered_by_name_and_time got filter obj: {filter_obj}")
 
