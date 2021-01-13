@@ -9,8 +9,6 @@ equipment_collection = db.get_collection("equipment")
 
 
 class Equipment(BaseModel):
-    id: str = Field(None)
-
     name: str = Field(
         ..., description="Name of the equipment", example="Камера 306 на доску"
     )
@@ -35,6 +33,9 @@ class Equipment(BaseModel):
         description="RTSP main address",
         example="rtsp://172.18.191.62:554/Streaming/Channels/1",
     )
+
+    class Config:
+        extra = "allow"
 
 
 async def get_all() -> List[Dict[str, Union[str, int]]]:

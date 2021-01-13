@@ -12,8 +12,6 @@ logger = logging.getLogger("erudite")
 
 
 class Lesson(BaseModel):
-    id: str = Field(None)
-
     ruz_auditorium: str = Field(..., description="Room name in RUZ", example="104")
     ruz_auditorium_oid: int = Field(..., description="Room id in RUZ", example=3308)
     ruz_building: str = Field(
@@ -66,6 +64,9 @@ class Lesson(BaseModel):
     start_time: str = Field(..., description="Start time of the lesson", example="9:30")
     end_time: str = Field(..., description="End time of the lesson", example="10:50")
 
+    class Config:
+        extra = "allow"
+
 
 async def get_all() -> List[Dict[str, Union[str, int]]]:
     """ Get all lessons from db """
@@ -97,7 +98,7 @@ async def get_filtered(
         filter_obj["date"]["$lte"] = str(todate.date())
 
         filter_obj.setdefault("start_time", {})
-        filter_obj["start_time"]['$lte'] = str(todate.time())
+        filter_obj["start_time"]["$lte"] = str(todate.time())
 
     logger.info(f"lessons.get_filtered_by_name_and_time got filter obj: {filter_obj}")
 
@@ -122,10 +123,10 @@ async def get_by_ruz_id(ruz_lesson_oid: int) -> Optional[Dict[str, Union[str, in
         return mongo_to_dict(lesson)
 
 
-async def add(data: dict) -> Dict[str, Union[str, int]]:
+async def add(lesson: dict) -> Dict[str, Union[str, int]]:
     """ Add lesson to db """
 
-    lesson_added = await lessons_collection.insert_one(data)
+    lesson_added = await lessons_collection.insert_one(lesson)
     new = await lessons_collection.find_one({"_id": lesson_added.inserted_id})
 
     return mongo_to_dict(new)

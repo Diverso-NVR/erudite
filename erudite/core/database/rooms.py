@@ -10,8 +10,6 @@ rooms_collection = db.get_collection("rooms")
 
 
 class Room(BaseModel):
-    id: str = Field(None)
-
     ruz_type_of_auditorium_oid: int = Field(
         ..., description="Room type in RUZ", example=1019
     )
@@ -29,6 +27,9 @@ class Room(BaseModel):
     ruz_type_of_auditorium: str = Field(
         ..., description="Type of room", example="Семинарская"
     )
+
+    class Config:
+        extra = "allow"
 
 
 async def get_all() -> List[Dict[str, Union[str, int]]]:

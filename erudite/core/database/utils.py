@@ -13,7 +13,10 @@ def mongo_to_dict(obj):
     if obj.get("_id") is None:
         return obj
 
-    return {**obj, "id": str(obj["_id"])}
+    res = {"id": str(obj["_id"]), **obj}
+    res.pop("_id")
+
+    return res
 
 
 # Check if ObjectId is in the right format

@@ -142,9 +142,10 @@ async def delete_room(room_id: str):
     response_model=Message,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
-async def patch_room(room_id: str, new_values: dict):
+async def patch_room(room_id: str, room: rooms.Room, request: Request):
     # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
+    new_values = await request.json()
 
     if not id:
         message = "ObjectId is written in the wrong format"
@@ -173,9 +174,10 @@ async def patch_room(room_id: str, new_values: dict):
     response_model=Message,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
-async def update_room(room_id: str, new_values: rooms.Room, request: Request):
+async def update_room(room_id: str, room: rooms.Room, request: Request):
     # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
+    new_values = await request.json()
 
     if not id:
         message = "ObjectId is written in the wrong format"
@@ -188,7 +190,7 @@ async def update_room(room_id: str, new_values: rooms.Room, request: Request):
     if await rooms.get(id):
         await rooms.remove(id)
         await rooms.add_empty(id)
-        await rooms.put(id, await request.json())
+        await rooms.put(id, new_values)
         message = f"Room: {room_id} updated"
         logger.info(message)
         return {"message": message}

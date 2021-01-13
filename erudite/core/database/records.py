@@ -2,8 +2,6 @@ from pydantic import BaseModel, Field
 
 
 class Record(BaseModel):
-    id: str = Field(None)
-
     room_id: str = Field(...)
     room_name: str = Field(...)
     date: str = Field(..., description="Date of record", example="2020-09-01")
@@ -12,3 +10,6 @@ class Record(BaseModel):
 
     url: str = Field(None, description="Record url")
     emotions_url: str = Field(None, description="Emotions graph for record")
+
+    class Config:
+        extra = "allow"

@@ -125,11 +125,11 @@ async def delete_equipment(equipment_id: str):
 
     if await equipment.get(id):
         await equipment.remove(id)
-        message = f"Equipment: {equipment_id}  -  deleted from the database"
+        message = f"Equipment: {equipment_id} deleted from the database"
         logger.info(message)
         return {"message": message}
     else:
-        message = f"Equipment: {equipment_id}  -  not found in the database"
+        message = f"Equipment: {equipment_id} not found in the database"
         logger.info(message)
         return JSONResponse(status_code=404, content={"message": message})
 
@@ -142,7 +142,9 @@ async def delete_equipment(equipment_id: str):
     response_model=Message,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
-async def patch_equipment(equipment_id: str, new_values: equipment.Equipment) -> str:
+async def patch_equipment(
+    equipment_id: str, equipment: equipment.Equipment, request: Request
+) -> str:
     # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 
@@ -151,7 +153,7 @@ async def patch_equipment(equipment_id: str, new_values: equipment.Equipment) ->
         return JSONResponse(status_code=400, content={"message": message})
 
     if await equipment.get(id):
-        await equipment.patch(id, new_values.dict())
+        await equipment.patch(id, await request.json())
         message = f"Equipment {equipment_id} patched"
         logger.info(message)
         return {"message": message}
@@ -169,7 +171,9 @@ async def patch_equipment(equipment_id: str, new_values: equipment.Equipment) ->
     response_model=Message,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
-async def update_equipment(equipment_id: str, new_values: equipment.Equipment, request: Request):
+async def update_equipment(
+    equipment_id: str, equipment: equipment.Equipment, request: Request
+):
     # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 

@@ -1,7 +1,7 @@
 import logging
 from typing import Optional, List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from ..database.models import Message
@@ -74,14 +74,14 @@ async def find_discipline(discipline_id: str):
     response_model=disciplines.Discipline,
     responses={409: {"model": Message}},
 )
-async def add_discipline(discipline: disciplines.Discipline):
+async def add_discipline(discipline: disciplines.Discipline, request: Request):
     # Check if discipline with specified ObjectId is in the database
     if await disciplines.get_by_cource_code(discipline.course_code):
         message = f"Discipline with code: {discipline.course_code} already exists in the database"
         logger.info(message)
         return JSONResponse(status_code=409, content={"message": message})
 
-    return await disciplines.add(discipline)
+    return await disciplines.add(await request.json())
 
 
 @router.delete(
@@ -121,7 +121,9 @@ async def delete_discipline(discipline_id: str):
     response_model=Message,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
-async def update_discipline(discipline_id: str, new_values: disciplines.Discipline):
+async def update_discipline(
+    discipline_id: str, discipline: disciplines.Discipline, request: Request
+):
     # Check if ObjectId is in the right format
     id = check_ObjectId(discipline_id)
 
@@ -132,7 +134,7 @@ async def update_discipline(discipline_id: str, new_values: disciplines.Discipli
     if await disciplines.get(id):
         await disciplines.remove(id)
         await disciplines.add_empty(id)
-        await disciplines.patch_all(id, new_values)
+        await disciplines.patch_all(id, await request.json())
         message = f"Discipline: {discipline_id}  -  updated"
         logger.info(
             message

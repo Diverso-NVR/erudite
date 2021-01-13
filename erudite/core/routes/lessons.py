@@ -34,7 +34,9 @@ async def get_lessons(
     if all(p is None for p in [ruz_auditorium, ruz_lecturer_email, fromdate, todate]):
         return await lessons.get_all()
 
-    return await lessons.get_filtered(ruz_auditorium, ruz_lecturer_email, fromdate, todate)
+    return await lessons.get_filtered(
+        ruz_auditorium, ruz_lecturer_email, fromdate, todate
+    )
 
 
 @router.get(

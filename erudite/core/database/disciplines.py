@@ -10,11 +10,12 @@ disciplines_collection = db.get_collection("disciplines")
 
 # Class of disciplines
 class Discipline(BaseModel):
-    id: str = Field(None)
-    
     course_code: str = Field(...)
     groups: List[str] = Field(...)
     emails: List[str] = Field(...)
+
+    class Config:
+        extra = "allow"
 
 
 async def get_all() -> list:
@@ -41,12 +42,10 @@ async def get_by_cource_code(course_code: str) -> dict:
         return mongo_to_dict(discipline)
 
 
-async def add(discipline: Discipline) -> dict:
+async def add(discipline: dict) -> dict:
     """ Add discipline to db """
 
-    discipline_added = await disciplines_collection.insert_one(
-        discipline.dict(by_alias=True)
-    )
+    discipline_added = await disciplines_collection.insert_one(discipline)
     new = await disciplines_collection.find_one({"_id": discipline_added.inserted_id})
     return mongo_to_dict(new)
 
