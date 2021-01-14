@@ -1,11 +1,8 @@
 """ Вспомогательные функции """
 
-import logging
+from loguru import logger
 
 from bson.objectid import ObjectId
-
-
-logger = logging.getLogger("erudite")
 
 
 # Schemas to dictionary

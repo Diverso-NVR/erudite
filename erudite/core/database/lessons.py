@@ -1,4 +1,4 @@
-import logging
+from loguru import logger
 from typing import Dict, Optional, List, Union
 from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
@@ -7,8 +7,6 @@ from .models import db
 from .utils import mongo_to_dict
 
 lessons_collection = db.get_collection("lessons")
-
-logger = logging.getLogger("erudite")
 
 
 class Lesson(BaseModel):

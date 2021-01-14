@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
-import logging
+from loguru import logger
 from typing import Optional, List
 from datetime import datetime
 
@@ -11,9 +11,8 @@ from ..database.models import Message
 from ..database.utils import check_ObjectId
 from ..database import lessons
 
-router = APIRouter()
 
-logger = logging.getLogger("erudite")
+router = APIRouter()
 
 
 @router.get(

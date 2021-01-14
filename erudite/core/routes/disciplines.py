@@ -1,4 +1,4 @@
-import logging
+from loguru import logger
 from typing import Optional, List
 
 from fastapi import APIRouter, Request
@@ -8,9 +8,8 @@ from ..database.models import Message
 from ..database.utils import check_ObjectId
 from ..database import disciplines
 
-router = APIRouter()
 
-logger = logging.getLogger("erudite")
+router = APIRouter()
 
 
 @router.get(

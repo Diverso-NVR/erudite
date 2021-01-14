@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
-import logging
+from loguru import logger
 from typing import Optional, List
 
 from ..database.models import (
@@ -10,9 +10,8 @@ from ..database.models import (
 from ..database import rooms, equipment
 from ..database.utils import check_ObjectId, get_not_None_args
 
-router = APIRouter()
 
-logger = logging.getLogger("erudite")
+router = APIRouter()
 
 
 @router.get(
