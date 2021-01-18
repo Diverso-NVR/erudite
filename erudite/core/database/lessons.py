@@ -2,6 +2,7 @@ from loguru import logger
 from typing import Dict, Optional, List, Union
 from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
+from bson.objectid import ObjectId
 
 from .models import db
 from .utils import mongo_to_dict
@@ -20,20 +21,14 @@ class Lesson(BaseModel):
     ruz_building_oid: int = Field(
         ..., description="Building id in which room is located", example=2211
     )
-    ruz_discipline: str = Field(
-        ..., description="Discipline name in RUZ", example="Физика"
-    )
-    ruz_discipline_oid: int = Field(
-        ..., description="Discipline id in RUZ", example=1337
-    )
+    ruz_discipline: str = Field(..., description="Discipline name in RUZ", example="Физика")
+    ruz_discipline_oid: int = Field(..., description="Discipline id in RUZ", example=1337)
     ruz_kind_of_work: str = Field(
         ...,
         description="Lesson type name from RUZ",
         example="Практическое занятие on-line",
     )
-    ruz_kind_of_work_oid: int = Field(
-        ..., description="Lesson type id from RUZ", example=969
-    )
+    ruz_kind_of_work_oid: int = Field(..., description="Lesson type id from RUZ", example=969)
     ruz_lecturer_title: str = Field(
         ..., description="Lecturer name from RUZ", example="Даниил Мирталибов"
     )
@@ -100,12 +95,10 @@ async def get_filtered(
 
     logger.info(f"lessons.get_filtered_by_name_and_time got filter obj: {filter_obj}")
 
-    return [
-        mongo_to_dict(lesson) async for lesson in lessons_collection.find(filter_obj)
-    ]
+    return [mongo_to_dict(lesson) async for lesson in lessons_collection.find(filter_obj)]
 
 
-async def get_by_id(lesson_id: str) -> Optional[Dict[str, Union[str, int]]]:
+async def get_by_id(lesson_id: ObjectId) -> Optional[Dict[str, Union[str, int]]]:
     """ Get lesson by its db id """
 
     lesson = await lessons_collection.find_one({"_id": lesson_id})
@@ -128,3 +121,9 @@ async def add(lesson: dict) -> Dict[str, Union[str, int]]:
     new = await lessons_collection.find_one({"_id": lesson_added.inserted_id})
 
     return mongo_to_dict(new)
+
+
+async def remove(lesson_id: ObjectId):
+    """ Delete lesson from db """
+
+    await lessons_collection.delete_one({"_id": lesson_id})

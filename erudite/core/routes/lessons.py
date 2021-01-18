@@ -33,9 +33,7 @@ async def get_lessons(
     if all(p is None for p in [ruz_auditorium, ruz_lecturer_email, fromdate, todate]):
         return await lessons.get_all()
 
-    return await lessons.get_filtered(
-        ruz_auditorium, ruz_lecturer_email, fromdate, todate
-    )
+    return await lessons.get_filtered(ruz_auditorium, ruz_lecturer_email, fromdate, todate)
 
 
 @router.get(
@@ -80,3 +78,31 @@ async def add_lesson(lesson: lessons.Lesson, request: Request):
         return JSONResponse(status_code=409, content={"message": message})
 
     return await lessons.add(await request.json())
+
+
+@router.delete(
+    "/lessons/{lesson_id}",
+    tags=["lessons"],
+    summary="Delete lesson",
+    description="Delete lesson specified by it's id",
+    response_model=Message,
+    responses={400: {"model": Message}, 404: {"model": Message}},
+)
+async def delete_lesson(lesson_id: str):
+    # Check if ObjectId is in the right format
+    id = check_ObjectId(lesson_id)
+
+    if not id:
+        message = "ObjectId is written in the wrong format"
+        return JSONResponse(status_code=400, content={"message": message})
+
+    # Check if lesson with specified ObjectId is in the database
+    if await lessons.get_by_id(id):
+        await lessons.remove(id)
+        message = f"Lesson: {lesson_id}  -  deleted from the database"
+        logger.info(message)
+        return {"message": message}
+
+    message = f"Lesson: {lesson_id}  -  not found in the database"
+    logger.info(message)
+    return JSONResponse(status_code=404, content={"message": message})
