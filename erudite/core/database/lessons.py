@@ -20,14 +20,20 @@ class Lesson(BaseModel):
     ruz_building_oid: int = Field(
         ..., description="Building id in which room is located", example=2211
     )
-    ruz_discipline: str = Field(..., description="Discipline name in RUZ", example="Физика")
-    ruz_discipline_oid: int = Field(..., description="Discipline id in RUZ", example=1337)
+    ruz_discipline: str = Field(
+        ..., description="Discipline name in RUZ", example="Физика"
+    )
+    ruz_discipline_oid: int = Field(
+        ..., description="Discipline id in RUZ", example=1337
+    )
     ruz_kind_of_work: str = Field(
         None,
         description="Lesson type name from RUZ",
         example="Практическое занятие on-line",
     )
-    ruz_kind_of_work_oid: int = Field(..., description="Lesson type id from RUZ", example=969)
+    ruz_kind_of_work_oid: int = Field(
+        ..., description="Lesson type id from RUZ", example=969
+    )
     ruz_lecturer_title: str = Field(
         ..., description="Lecturer name from RUZ", example="Даниил Мирталибов"
     )
@@ -87,7 +93,9 @@ async def sort_many(atributes: dict) -> Optional[List[Dict[str, Union[str, int]]
 
     logger.info(f"lessons.sort_many got filter obj: {atributes}")
 
-    return [mongo_to_dict(lesson) async for lesson in lessons_collection.find(atributes)]
+    return [
+        mongo_to_dict(lesson) async for lesson in lessons_collection.find(atributes)
+    ]
 
 
 async def get_by_id(lesson_id: ObjectId) -> Optional[Dict[str, Union[str, int]]]:
