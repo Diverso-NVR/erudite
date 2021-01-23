@@ -23,7 +23,7 @@ class Lesson(BaseModel):
     ruz_discipline: str = Field(..., description="Discipline name in RUZ", example="Физика")
     ruz_discipline_oid: int = Field(..., description="Discipline id in RUZ", example=1337)
     ruz_kind_of_work: str = Field(
-        ...,
+        None,
         description="Lesson type name from RUZ",
         example="Практическое занятие on-line",
     )
@@ -32,7 +32,7 @@ class Lesson(BaseModel):
         ..., description="Lecturer name from RUZ", example="Даниил Мирталибов"
     )
     ruz_lecturer_email: str = Field(
-        ..., description="Lecturer email from RUZ", example="dimirtalibov@hse.ru"
+        None, description="Lecturer email from RUZ", example="dimirtalibov@hse.ru"
     )
     ruz_lesson_oid: int = Field(..., description="Lesson id from RUZ", example=7735895)
     ruz_url: str = Field(
