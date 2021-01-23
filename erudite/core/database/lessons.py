@@ -1,7 +1,6 @@
 from loguru import logger
 from typing import Dict, Optional, List, Union
-from pydantic import BaseModel, Field, EmailStr
-from datetime import datetime
+from pydantic import BaseModel, Field
 from bson.objectid import ObjectId
 
 from .models import db
@@ -21,19 +20,25 @@ class Lesson(BaseModel):
     ruz_building_oid: int = Field(
         ..., description="Building id in which room is located", example=2211
     )
-    ruz_discipline: str = Field(..., description="Discipline name in RUZ", example="Физика")
-    ruz_discipline_oid: int = Field(..., description="Discipline id in RUZ", example=1337)
+    ruz_discipline: str = Field(
+        ..., description="Discipline name in RUZ", example="Физика"
+    )
+    ruz_discipline_oid: int = Field(
+        ..., description="Discipline id in RUZ", example=1337
+    )
     ruz_kind_of_work: str = Field(
-        ...,
+        None,
         description="Lesson type name from RUZ",
         example="Практическое занятие on-line",
     )
-    ruz_kind_of_work_oid: int = Field(..., description="Lesson type id from RUZ", example=969)
+    ruz_kind_of_work_oid: int = Field(
+        ..., description="Lesson type id from RUZ", example=969
+    )
     ruz_lecturer_title: str = Field(
         ..., description="Lecturer name from RUZ", example="Даниил Мирталибов"
     )
     ruz_lecturer_email: str = Field(
-        ..., description="Lecturer email from RUZ", example="dimirtalibov@hse.ru"
+        None, description="Lecturer email from RUZ", example="dimirtalibov@hse.ru"
     )
     ruz_lesson_oid: int = Field(..., description="Lesson id from RUZ", example=7735895)
     ruz_url: str = Field(
@@ -67,35 +72,30 @@ async def get_all() -> List[Dict[str, Union[str, int]]]:
     return [mongo_to_dict(lesson) async for lesson in lessons_collection.find()]
 
 
-async def get_filtered(
-    ruz_auditorium: Optional[str] = None,
-    ruz_lecturer_email: Optional[EmailStr] = None,
-    fromdate: Optional[datetime] = None,
-    todate: Optional[datetime] = None,
-) -> Optional[List[Dict[str, Union[str, int]]]]:
-    """ Get lesson by its ruz name and datetime """
+async def sort_many(atributes: dict) -> Optional[List[Dict[str, Union[str, int]]]]:
+    """ Get lesson by its ruz name and datetime or any of it's atributes """
 
-    filter_obj = {}
+    fromdate = atributes.get("fromdate")
+    todate = atributes.get("todate")
 
-    if ruz_auditorium is not None:
-        filter_obj = {"ruz_auditorium": ruz_auditorium}
-    if ruz_lecturer_email is not None:
-        filter_obj = {"ruz_lecturer_email": ruz_lecturer_email}
-    if fromdate is not None:
-        filter_obj["date"] = {
+    if atributes.get(fromdate) is not None:
+        atributes["date"] = {
             "$gte": str(fromdate.date()),
         }
-        filter_obj["start_time"] = {"$gte": str(fromdate.time())}
+        atributes["start_time"] = {"$gte": str(fromdate.time())}
+
     if todate is not None:
-        filter_obj.setdefault("date", {})
-        filter_obj["date"]["$lte"] = str(todate.date())
+        atributes.setdefault("date", {})
+        atributes["date"]["$lte"] = str(todate.date())
 
-        filter_obj.setdefault("start_time", {})
-        filter_obj["start_time"]["$lte"] = str(todate.time())
+        atributes.setdefault("start_time", {})
+        atributes["start_time"]["$lte"] = str(todate.time())
 
-    logger.info(f"lessons.get_filtered_by_name_and_time got filter obj: {filter_obj}")
+    logger.info(f"lessons.sort_many got filter obj: {atributes}")
 
-    return [mongo_to_dict(lesson) async for lesson in lessons_collection.find(filter_obj)]
+    return [
+        mongo_to_dict(lesson) async for lesson in lessons_collection.find(atributes)
+    ]
 
 
 async def get_by_id(lesson_id: ObjectId) -> Optional[Dict[str, Union[str, int]]]:
@@ -123,7 +123,22 @@ async def add(lesson: dict) -> Dict[str, Union[str, int]]:
     return mongo_to_dict(new)
 
 
+async def add_empty(lesson_id: ObjectId):
+    """ Add empty lesson with specified id to db """
+
+    await lessons_collection.insert_one({"_id": lesson_id})
+
+
 async def remove(lesson_id: ObjectId):
     """ Delete lesson from db """
 
     await lessons_collection.delete_one({"_id": lesson_id})
+
+
+async def put(lesson_id: ObjectId, new_values: dict):
+    """ Update lesson """
+
+    await lessons_collection.update_one(
+        {"_id": lesson_id},
+        {"$set": new_values},
+    )
