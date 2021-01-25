@@ -78,13 +78,13 @@ async def sort_many(atributes: dict) -> Optional[List[Dict[str, Union[str, int]]
     fromdate = atributes.get("fromdate")
     todate = atributes.get("todate")
 
-    if atributes.get(fromdate) is not None:
+    if fromdate:
         atributes["date"] = {
             "$gte": str(fromdate.date()),
         }
         atributes["start_time"] = {"$gte": str(fromdate.time())}
 
-    if todate is not None:
+    if todate:
         atributes.setdefault("date", {})
         atributes["date"]["$lte"] = str(todate.date())
 
@@ -132,7 +132,8 @@ async def add_empty(lesson_id: ObjectId):
 async def remove(lesson_id: ObjectId):
     """ Delete lesson from db """
 
-    await lessons_collection.delete_one({"_id": lesson_id})
+    res = await lessons_collection.delete_one({"_id": lesson_id})
+    return res
 
 
 async def put(lesson_id: ObjectId, new_values: dict):
