@@ -12,7 +12,6 @@ router = APIRouter()
 
 @router.get(
     "/equipment",
-    tags=["equipment"],
     summary="Get equipment",
     description=(
         "Get a list of equipment in the database or an equipment by any of it's atributes, if provided"
@@ -55,7 +54,6 @@ async def list_equipments(
 
 @router.get(
     "/equipment/{equipment_id}",
-    tags=["equipment"],
     summary="Get equipment",
     description="Get an equipment specified by it's ObjectId",
     response_model=equipment.Equipment,
@@ -85,7 +83,6 @@ async def find_equipment(equipment_id: str):
 
 @router.post(
     "/equipment",
-    tags=["equipment"],
     summary="Create equipment",
     description="Create an equipment specified by it's ObjectId",
     response_model=equipment.Equipment,
@@ -107,7 +104,6 @@ async def create_equipment(val_equipment: equipment.Equipment, request: Request)
 
 @router.delete(
     "/equipment/{equipment_id}",
-    tags=["equipment"],
     summary="Delete equipment",
     description="Delete an equipment specified by it's ObjectId",
     response_model=Message,
@@ -134,7 +130,6 @@ async def delete_equipment(equipment_id: str):
 
 @router.patch(
     "/equipment/{equipment_id}",
-    tags=["equipment"],
     summary="Patch equipment",
     description="Updates additional atributes of equipment specified by it's ObjectId",
     response_model=Message,
@@ -163,7 +158,6 @@ async def patch_equipment(
 
 @router.put(
     "/equipment/{equipment_id}",
-    tags=["equipment"],
     summary="Update equipment",
     description="Deletes old atributes of equipment and puts in new ones",
     response_model=Message,
