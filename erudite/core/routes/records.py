@@ -107,10 +107,10 @@ async def delete_record(record_id: str):
     logger.info(message)
     return JSONResponse(status_code=404, content={"message": message})
 
-@router.put(
+@router.patch(
     "/records/{record_id}",
-    summary="Updates record",
-    description="Deletes old atributes of record specified by it's ObjectId and puts in new ones",
+    summary="Patch record",
+    description="Updates additional attributes of record specified by it's ObjectId",
     response_model=records.Record,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
@@ -128,10 +128,8 @@ async def update_record(record_id: str, record: records.Record, request: Request
         return JSONResponse(status_code=400, content={"message": message})
 
     if await records.get_by_id(id):
-        await records.remove(id)
-        await records.add_empty(id)
-        await records.put(id, new_values)
-        message = f"Record: {record_id} updated"
+        await records.patch(id, new_values)
+        message = f"Record: {record_id} patched"
         logger.info(message)
         return await request.json()
     # Check if Record with specified ObjectId is in the database
