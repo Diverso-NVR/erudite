@@ -22,11 +22,13 @@ def create_app():
     from core.routes.equipment import router as equipment_router
     from core.routes.disciplines import router as discipline_router
     from core.routes.lessons import router as lesson_router
+    from core.routes.records import router as record_router
 
-    app.include_router(room_router)
-    app.include_router(equipment_router)
-    app.include_router(discipline_router)
-    app.include_router(lesson_router)
+    app.include_router(room_router, tags=["rooms"])
+    app.include_router(equipment_router,tags=["equipment"] )
+    app.include_router(discipline_router, tags=["disciplines"])
+    app.include_router(lesson_router, tags=["lessons"])
+    app.include_router(record_router, tags=["records"])
 
     return app
 
@@ -45,7 +47,7 @@ def custom_openapi():
 
     openapi_schema = get_openapi(
         title="Erudite",
-        version="1.0.9",
+        version="1.0.10",
         description=(
             "Erudite – db of rooms, equipment, disciplines and stuff in MIEM. Kinda Google AdminSDK"
         ),

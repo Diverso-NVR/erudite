@@ -16,7 +16,6 @@ router = APIRouter()
 
 @router.get(
     "/rooms",
-    tags=["rooms"],
     summary="Get all rooms",
     description=(
         "Get a list of all rooms in the database or a room by any of it's atributes, if provided"
@@ -58,7 +57,6 @@ async def list_rooms(
 
 @router.get(
     "/rooms/{room_id}",
-    tags=["rooms"],
     summary="Get a room",
     description="Get a room specified by it's ObjectId",
     response_model=rooms.Room,
@@ -85,7 +83,6 @@ async def find_room(room_id: str):
 
 @router.post(
     "/rooms",
-    tags=["rooms"],
     summary="Create room",
     description="Create a room specified by it's ObjectId",
     response_model=rooms.Room,
@@ -107,7 +104,6 @@ async def create_room(room: rooms.Room, request: Request):
 
 @router.delete(
     "/rooms/{room_id}",
-    tags=["rooms"],
     summary="Delete room",
     description="Delete room specified by it's ObjectId",
     response_model=Message,
@@ -135,7 +131,6 @@ async def delete_room(room_id: str):
 
 @router.patch(
     "/rooms/{room_id}",
-    tags=["rooms"],
     summary="Patch room",
     description="Updates additional atributes of room specified by it's ObjectId",
     response_model=Message,
@@ -167,7 +162,6 @@ async def patch_room(room_id: str, room: rooms.Room, request: Request):
 
 @router.put(
     "/rooms/{room_id}",
-    tags=["rooms"],
     summary="Updates room",
     description="Deletes old atributes of room specified by it's ObjectId and puts in new ones",
     response_model=Message,
@@ -202,7 +196,6 @@ async def update_room(room_id: str, room: rooms.Room, request: Request):
 
 @router.get(
     "/rooms/{room_id}/equipment",
-    tags=["rooms"],
     summary="Get equipment from the room",
     description="Get a list of equipment from the room specified by it's ObjectId",
     response_model=List[equipment.Equipment],
