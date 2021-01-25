@@ -10,11 +10,12 @@ records_collection = db.get_collection("records")
 
 
 class Record(BaseModel):
-    room_name: str = Field(..., description="Комната, в которой была запись")
+    room_name: str = Field(..., description="Room where record was captured")
     date: str = Field(..., description="Date of record", example="2020-09-01")
     start_time: str = Field(..., description="Start time of record", example="13:00")
     end_time: str = Field(..., description="End time of record", example="13:30")
 
+    type: str = Field(None, description='Type of record. Also means service. Like Jitsi, Zoom, MS Teams, Offline', example='Jitsi')
     url: str = Field(None, description="Record url")
     emotions_url: str = Field(None, description="Emotions graph for record")
 
@@ -75,5 +76,5 @@ async def remove(record_id: ObjectId):
     await records_collection.delete_one({"_id": record_id})
 
 
-async def put(record_id: ObjectId, new_values: Dict[str, str]):
+async def patch(record_id: ObjectId, new_values: Dict[str, str]):
     await records_collection.update_one({"_id": record_id}, {"$set": new_values})
