@@ -17,7 +17,6 @@ router = APIRouter()
 
 @router.get(
     "/lessons",
-    tags=["lessons"],
     summary="Get all lessons or lesson by it's ruz id",
     description=(
         "Get a list of all lessons in the database, or a lessons in specified room and datetime"
@@ -78,7 +77,6 @@ async def get_lessons(
 
 @router.get(
     "/lessons/{lesson_id}",
-    tags=["lessons"],
     summary="Get a lesson",
     description="Get a lesson specified by it's ObjectId",
     response_model=lessons.Lesson,
@@ -105,7 +103,6 @@ async def get_lesson_by_id(lesson_id: str):
 @router.post(
     "/lessons",
     status_code=201,
-    tags=["lessons"],
     summary="Create lesson",
     description="Create lesson",
     response_model=lessons.Lesson,
@@ -122,7 +119,6 @@ async def add_lesson(lesson: lessons.Lesson, request: Request):
 
 @router.delete(
     "/lessons/{lesson_id}",
-    tags=["lessons"],
     summary="Delete lesson",
     description="Delete lesson specified by it's id",
     response_model=Message,
@@ -150,7 +146,6 @@ async def delete_lesson(lesson_id: str):
 
 @router.put(
     "/lessons/{lesson_id}",
-    tags=["lessons"],
     summary="Updates lesson",
     description="Deletes old atributes of lesson specified by it's ObjectId and puts in new ones",
     response_model=lessons.Lesson,

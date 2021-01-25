@@ -14,7 +14,6 @@ router = APIRouter()
 
 @router.get(
     "/disciplines",
-    tags=["disciplines"],
     summary="Get all disciplines/discipline by it's course code",
     description=(
         "Get a list of all disciplines in the database, or a discipline by it's course code"
@@ -38,7 +37,6 @@ async def get_disciplines(course_code: Optional[str] = None):
 
 @router.get(
     "/disciplines/{discipline_id}",
-    tags=["disciplines"],
     summary="Get a discipline",
     description="Get a discipline specified by it's ObjectId",
     response_model=disciplines.Discipline,
@@ -67,7 +65,6 @@ async def find_discipline(discipline_id: str):
 @router.post(
     "/disciplines",
     status_code=201,
-    tags=["disciplines"],
     summary="Create discipline",
     description="Create discipline specified by it's ObjectId",
     response_model=disciplines.Discipline,
@@ -85,7 +82,6 @@ async def add_discipline(discipline: disciplines.Discipline, request: Request):
 
 @router.delete(
     "/disciplines/{discipline_id}",
-    tags=["disciplines"],
     summary="Delete discipline",
     description="Delete discipline specified by it's ObjectId",
     response_model=Message,
@@ -112,7 +108,6 @@ async def delete_discipline(discipline_id: str):
 
 @router.put(
     "/disciplines/{discipline_id}",
-    tags=["disciplines"],
     summary="Updates discipline",
     description=(
         "Deletes old atributes of discipline specified by it's ObjectId and puts in new ones"

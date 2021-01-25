@@ -72,29 +72,29 @@ async def get_all() -> List[Dict[str, Union[str, int]]]:
     return [mongo_to_dict(lesson) async for lesson in lessons_collection.find()]
 
 
-async def sort_many(atributes: dict) -> Optional[List[Dict[str, Union[str, int]]]]:
-    """ Get lesson by its ruz name and datetime or any of it's atributes """
+async def sort_many(attributes: dict) -> Optional[List[Dict[str, Union[str, int]]]]:
+    """ Get lesson by its ruz name and datetime or any of it's attributes """
 
-    fromdate = atributes.get("fromdate")
-    todate = atributes.get("todate")
+    fromdate = attributes.pop("fromdate", None)
+    todate = attributes.pop("todate", None)
 
-    if atributes.get(fromdate) is not None:
-        atributes["date"] = {
+    if fromdate is not None:
+        attributes["date"] = {
             "$gte": str(fromdate.date()),
         }
-        atributes["start_time"] = {"$gte": str(fromdate.time())}
+        attributes["start_time"] = {"$gte": str(fromdate.time())}
 
     if todate is not None:
-        atributes.setdefault("date", {})
-        atributes["date"]["$lte"] = str(todate.date())
+        attributes.setdefault("date", {})
+        attributes["date"]["$lte"] = str(todate.date())
 
-        atributes.setdefault("start_time", {})
-        atributes["start_time"]["$lte"] = str(todate.time())
+        attributes.setdefault("start_time", {})
+        attributes["start_time"]["$lte"] = str(todate.time())
 
-    logger.info(f"lessons.sort_many got filter obj: {atributes}")
+    logger.info(f"lessons.sort_many got filter obj: {attributes}")
 
     return [
-        mongo_to_dict(lesson) async for lesson in lessons_collection.find(atributes)
+        mongo_to_dict(lesson) async for lesson in lessons_collection.find(attributes)
     ]
 
 
@@ -109,7 +109,7 @@ async def get_by_id(lesson_id: ObjectId) -> Optional[Dict[str, Union[str, int]]]
 async def get_by_ruz_id(ruz_lesson_oid: int) -> Optional[Dict[str, Union[str, int]]]:
     """ Get lesson by its id in RUZ """
 
-    lesson = await lessons_collection.find_one({"_id": ruz_lesson_oid})
+    lesson = await lessons_collection.find_one({"ruz_lesson_oid": ruz_lesson_oid})
     if lesson:
         return mongo_to_dict(lesson)
 
