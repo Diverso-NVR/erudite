@@ -1,6 +1,7 @@
 from starlette.middleware.base import BaseHTTPMiddleware
-
 from fastapi.openapi.utils import get_openapi
+
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from core.settings import create_logger, settings
 
@@ -17,6 +18,9 @@ def create_app():
         from core.middleware import authorization
 
         app.add_middleware(BaseHTTPMiddleware, dispatch=authorization)
+    
+    Instrumentator().instrument(app).expose(app)
+
 
     from core.routes.rooms import router as room_router
     from core.routes.equipment import router as equipment_router

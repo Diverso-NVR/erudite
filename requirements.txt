@@ -8,3 +8,4 @@ requests
 asyncpg
 pymongo
 loguru
+prometheus-fastapi-instrumentator
