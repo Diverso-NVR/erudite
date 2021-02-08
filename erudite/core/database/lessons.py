@@ -78,26 +78,15 @@ async def sort_many(attributes: dict) -> Optional[List[Dict[str, Union[str, int]
     fromdate = attributes.pop("fromdate", None)
     todate = attributes.pop("todate", None)
 
-<<<<<<< HEAD
     if fromdate:
-        atributes["date"] = {
-=======
-    if fromdate is not None:
         attributes["date"] = {
->>>>>>> 2a7ee79210875fdb943ce9306918936c5d0729b2
             "$gte": str(fromdate.date()),
         }
         attributes["start_time"] = {"$gte": str(fromdate.time())}
 
-<<<<<<< HEAD
     if todate:
-        atributes.setdefault("date", {})
-        atributes["date"]["$lte"] = str(todate.date())
-=======
-    if todate is not None:
         attributes.setdefault("date", {})
         attributes["date"]["$lte"] = str(todate.date())
->>>>>>> 2a7ee79210875fdb943ce9306918936c5d0729b2
 
         attributes.setdefault("start_time", {})
         attributes["start_time"]["$lte"] = str(todate.time())

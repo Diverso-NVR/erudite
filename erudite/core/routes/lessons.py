@@ -60,6 +60,7 @@ async def get_lessons(
             todate,
         ]
     ):
+        logger.info("All lessons returned")
         return await lessons.get_all()
 
     all_args = locals()

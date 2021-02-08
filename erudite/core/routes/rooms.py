@@ -32,14 +32,18 @@ async def list_rooms(
     ruz_number: Optional[str] = None,
     ruz_type_of_auditorium: Optional[str] = None,
 ):
-    if (
-        ruz_auditorium_oid is None
-        and ruz_amount is None
-        and ruz_building is None
-        and ruz_building_gid is None
-        and ruz_number is None
-        and ruz_type_of_auditorium is None
+    if all(
+        p is None
+        for p in [
+            ruz_auditorium_oid,
+            ruz_amount,
+            ruz_building,
+            ruz_building_gid,
+            ruz_number,
+            ruz_type_of_auditorium,
+        ]
     ):
+        logger.info("All rooms returned")
         return await rooms.get_all()
 
     all_args = locals()
