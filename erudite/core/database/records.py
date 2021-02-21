@@ -19,6 +19,8 @@ class Record(BaseModel):
     url: str = Field(None, description="Record url")
     emotions_url: str = Field(None, description="Emotions graph for record")
 
+    keywords: List[str] = Field(None, description="Keywords from record audio")
+
     class Config:
         extra = "allow"
 
