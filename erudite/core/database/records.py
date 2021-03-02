@@ -64,7 +64,7 @@ async def sort_many(attributes: dict) -> Optional[List[Dict[str, str]]]:
 
 
 async def get_by_id(record_id: ObjectId) -> Optional[Dict[str, str]]:
-    record = await records_collection.find({"_id": record_id})
+    record = await records_collection.find_one({"_id": record_id})
     if record:
         return mongo_to_dict(record)
 
