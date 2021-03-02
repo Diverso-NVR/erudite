@@ -32,14 +32,18 @@ async def list_rooms(
     ruz_number: Optional[str] = None,
     ruz_type_of_auditorium: Optional[str] = None,
 ):
-    if (
-        ruz_auditorium_oid is None
-        and ruz_amount is None
-        and ruz_building is None
-        and ruz_building_gid is None
-        and ruz_number is None
-        and ruz_type_of_auditorium is None
+    if all(
+        p is None
+        for p in [
+            ruz_auditorium_oid,
+            ruz_amount,
+            ruz_building,
+            ruz_building_gid,
+            ruz_number,
+            ruz_type_of_auditorium,
+        ]
     ):
+        logger.info("All rooms returned")
         return await rooms.get_all()
 
     all_args = locals()
@@ -136,7 +140,7 @@ async def delete_room(room_id: str):
     response_model=Message,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
-async def patch_room(room_id: str, room: rooms.Room, request: Request):
+async def patch_room(room_id: str, request: Request):
     # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
     new_values = await request.json()
