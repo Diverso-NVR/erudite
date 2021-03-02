@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 from ..database.models import db
 from ..database.utils import mongo_to_dict
@@ -13,6 +13,9 @@ class Discipline(BaseModel):
     course_code: str = Field(...)
     groups: List[str] = Field(...)
     emails: List[str] = Field(...)
+
+    classroom_id: str = Field(None)
+    classroom_url: str = Field(None)
 
     class Config:
         extra = "allow"
