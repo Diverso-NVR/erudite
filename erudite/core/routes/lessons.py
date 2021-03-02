@@ -60,6 +60,7 @@ async def get_lessons(
             todate,
         ]
     ):
+        logger.info("All lessons returned")
         return await lessons.get_all()
 
     all_args = locals()
@@ -134,7 +135,11 @@ async def delete_lesson(lesson_id: str):
 
     # Check if lesson with specified ObjectId is in the database
     if await lessons.get_by_id(id):
-        await lessons.remove(id)
+        res = await lessons.remove(id)
+        if res.deleted_count == 0:
+            message = "Something went wrong..."
+            logger.info(message)
+            return {"message": message}
         message = f"Lesson: {lesson_id}  -  deleted from the database"
         logger.info(message)
         return {"message": message}

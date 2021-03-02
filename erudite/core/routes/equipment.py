@@ -135,9 +135,7 @@ async def delete_equipment(equipment_id: str):
     response_model=Message,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
-async def patch_equipment(
-    equipment_id: str, equipment: equipment.Equipment, request: Request
-) -> str:
+async def patch_equipment(equipment_id: str, request: Request) -> str:
     # Check if ObjectId is in the right format
     id = check_ObjectId(equipment_id)
 

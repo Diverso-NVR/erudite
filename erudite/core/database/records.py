@@ -15,7 +15,11 @@ class Record(BaseModel):
     start_time: str = Field(..., description="Start time of record", example="13:00")
     end_time: str = Field(..., description="End time of record", example="13:30")
 
-    type: str = Field(None, description='Type of record. Also means service. Like Jitsi, Zoom, MS Teams, Offline', example='Jitsi')
+    type: str = Field(
+        None,
+        description="Type of record. Also means service. Like Jitsi, Zoom, MS Teams, Offline",
+        example="Jitsi",
+    )
     url: str = Field(None, description="Record url")
     emotions_url: str = Field(None, description="Emotions graph for record")
 
@@ -28,10 +32,12 @@ class Record(BaseModel):
 async def get_all() -> List[Dict[str, str]]:
     return [mongo_to_dict(record) async for record in records_collection.find()]
 
+
 async def get_by_url(url: str) -> Optional[Dict[str, Union[str, int]]]:
     record = await records_collection.find_one({"url": url})
     if record:
         return mongo_to_dict(record)
+
 
 async def sort_many(attributes: dict) -> Optional[List[Dict[str, str]]]:
     fromdate = attributes.pop("fromdate", None)

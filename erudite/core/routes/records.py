@@ -33,12 +33,13 @@ async def get_records(
 
     records_found = await records.sort_many(filter_args)
     if records_found:
-      logger.info(f"Records found: {records_found}")
-      return records_found
-    
+        logger.info(f"Records found: {records_found}")
+        return records_found
+
     message = "Records not found"
     logger.info(message)
     return JSONResponse(status_code=404, content={"message": message})
+
 
 @router.get(
     "/records/{record_id}",
@@ -81,6 +82,7 @@ async def add_record(record: records.Record, request: Request):
 
     return await records.add(await request.json())
 
+
 @router.delete(
     "/records/{record_id}",
     summary="Delete record",
@@ -107,6 +109,7 @@ async def delete_record(record_id: str):
     logger.info(message)
     return JSONResponse(status_code=404, content={"message": message})
 
+
 @router.patch(
     "/records/{record_id}",
     summary="Patch record",
@@ -114,7 +117,7 @@ async def delete_record(record_id: str):
     response_model=records.Record,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
-async def update_record(record_id: str, record: records.Record, request: Request):
+async def update_record(record_id: str, request: Request):
     # Check if ObjectId is in the right format
     id = check_ObjectId(record_id)
     new_values = await request.json()
