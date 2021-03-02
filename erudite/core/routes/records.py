@@ -134,7 +134,7 @@ async def update_record(record_id: str, new_values: dict, request: Request):
         await records.patch(id, new_values)
         message = f"Record: {record_id} patched"
         logger.info(message)
-        return await request.json()
+        return JSONResponse(status_code=200, content={"message": message})
     # Check if Record with specified ObjectId is in the database
     else:
         message = f"Record: {record_id}  -  not found in the database"
