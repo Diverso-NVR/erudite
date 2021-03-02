@@ -140,7 +140,7 @@ async def delete_room(room_id: str):
     response_model=Message,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
-async def patch_room(room_id: str, request: Request):
+async def patch_room(room_id: str, new_values: dict, request: Request):
     # Check if ObjectId is in the right format
     id = check_ObjectId(room_id)
     new_values = await request.json()

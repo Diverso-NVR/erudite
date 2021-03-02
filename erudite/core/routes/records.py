@@ -117,7 +117,7 @@ async def delete_record(record_id: str):
     response_model=records.Record,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
-async def update_record(record_id: str, request: Request):
+async def update_record(record_id: str, new_values: dict, request: Request):
     # Check if ObjectId is in the right format
     id = check_ObjectId(record_id)
     new_values = await request.json()
