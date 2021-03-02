@@ -114,7 +114,7 @@ async def delete_record(record_id: str):
     "/records/{record_id}",
     summary="Patch record",
     description="Updates additional attributes of record specified by it's ObjectId",
-    response_model=records.Record,
+    response_model=Message,
     responses={400: {"model": Message}, 404: {"model": Message}},
 )
 async def update_record(record_id: str, new_values: dict, request: Request):
