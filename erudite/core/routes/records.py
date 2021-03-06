@@ -24,16 +24,17 @@ async def get_records(
     todate: Optional[datetime] = None,
     room_name: Optional[str] = None,
     url: Optional[str] = None,
+    page_number: int = 0,
 ):
     if all(p is None for p in [fromdate, todate, room_name, url]):
-        return await records.get_all()
+        return await records.get_all(page_number)
 
     all_args = locals()
     filter_args = get_not_None_args(all_args)
+    filter_args.pop("page_number")
 
-    records_found = await records.sort_many(filter_args)
+    records_found = await records.sort_many(filter_args, page_number)
     if records_found:
-        logger.info(f"Records found: {records_found}")
         return records_found
 
     message = "Records not found"

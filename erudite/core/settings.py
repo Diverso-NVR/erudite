@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     mongo_url: str = Field(..., env="MONGO_DB_URL")
     mongo_db_name: str = Field(..., env="MONGO_DB_NAME")
 
-    testing: typing.Optional[bool] = Field(env="TESTING")
+    testing: typing.Optional[bool] = Field(env="TESTING", default=False)
     dev: typing.Optional[bool] = Field(env="DEV", default=False)
 
     class Config:

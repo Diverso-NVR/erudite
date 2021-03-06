@@ -50,7 +50,7 @@ def custom_openapi():
 
     openapi_schema = get_openapi(
         title="Erudite",
-        version="1.0.11",
+        version="1.1",
         description=(
             "Erudite – db of rooms, equipment, disciplines and stuff in MIEM. Kinda Google AdminSDK"
         ),

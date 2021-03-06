@@ -29,8 +29,15 @@ class Record(BaseModel):
         extra = "allow"
 
 
-async def get_all() -> List[Dict[str, str]]:
-    return [mongo_to_dict(record) async for record in records_collection.find()]
+async def get_all(page_number: int, page_size: int = 50) -> List[Dict[str, str]]:
+    return [
+        mongo_to_dict(record)
+        async for record in records_collection.find()
+        .sort("_id", 1)
+        .sort("date", -1)
+        .skip(page_number * page_size if page_number > 0 else 0)
+        .limit(page_size)
+    ]
 
 
 async def get_by_url(url: str) -> Optional[Dict[str, Union[str, int]]]:
@@ -39,7 +46,9 @@ async def get_by_url(url: str) -> Optional[Dict[str, Union[str, int]]]:
         return mongo_to_dict(record)
 
 
-async def sort_many(attributes: dict) -> Optional[List[Dict[str, str]]]:
+async def sort_many(
+    attributes: dict, page_number: int, page_size: int = 50
+) -> Optional[List[Dict[str, str]]]:
     fromdate = attributes.pop("fromdate", None)
     todate = attributes.pop("todate", None)
 
@@ -56,10 +65,17 @@ async def sort_many(attributes: dict) -> Optional[List[Dict[str, str]]]:
         attributes.setdefault("start_time", {})
         attributes["start_time"]["$lte"] = str(todate.time())
 
-    logger.info(f"records.sort_many got filter obj: {attributes}")
+    logger.info(
+        f"records.sort_many got filter obj: {attributes}, page_number: {page_number}, page_size: {page_size}"
+    )
 
     return [
-        mongo_to_dict(record) async for record in records_collection.find(attributes)
+        mongo_to_dict(record)
+        async for record in records_collection.find(attributes)
+        .sort("_id", 1)
+        .sort("date", -1)
+        .skip(page_number * page_size if page_number > 0 else 0)
+        .limit(page_size)
     ]
 
 
