@@ -25,15 +25,28 @@ async def get_records(
     room_name: Optional[str] = None,
     url: Optional[str] = None,
     page_number: int = 0,
+    with_keywords_only: bool = False,
+    ignore_autorec: bool = False,
 ):
     if all(p is None for p in [fromdate, todate, room_name, url]):
-        return await records.get_all(page_number)
+        return await records.get_all(
+            page_number,
+            with_keywords_only=with_keywords_only,
+            ignore_autorec=ignore_autorec,
+        )
 
     all_args = locals()
     filter_args = get_not_None_args(all_args)
     filter_args.pop("page_number")
+    filter_args.pop("with_keywords_only")
+    filter_args.pop("ignore_autorec")
 
-    records_found = await records.sort_many(filter_args, page_number)
+    records_found = await records.sort_many(
+        filter_args,
+        page_number,
+        with_keywords_only=with_keywords_only,
+        ignore_autorec=ignore_autorec,
+    )
     if records_found:
         return records_found
 

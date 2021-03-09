@@ -29,10 +29,24 @@ class Record(BaseModel):
         extra = "allow"
 
 
-async def get_all(page_number: int, page_size: int = 50) -> List[Dict[str, str]]:
+rec_types = ["Jitsi", "MS Teams", "Offline", "Autorecord"]
+
+
+async def get_all(
+    page_number: int,
+    page_size: int = 50,
+    with_keywords_only: bool = False,
+    ignore_autorec: bool = False,
+) -> List[Dict[str, str]]:
+    attributes = {}
+    if ignore_autorec:
+        attributes["type"] = {"$in": rec_types[:-1]}
+    if with_keywords_only:
+        attributes["keywords"] = {"$type": "array", "$not": {"$size": 0}}
+
     return [
         mongo_to_dict(record)
-        async for record in records_collection.find()
+        async for record in records_collection.find(attributes)
         .sort("_id", 1)
         .sort("date", -1)
         .skip(page_number * page_size if page_number > 0 else 0)
@@ -47,7 +61,11 @@ async def get_by_url(url: str) -> Optional[Dict[str, Union[str, int]]]:
 
 
 async def sort_many(
-    attributes: dict, page_number: int, page_size: int = 50
+    attributes: dict,
+    page_number: int,
+    page_size: int = 50,
+    with_keywords_only: bool = False,
+    ignore_autorec: bool = False,
 ) -> Optional[List[Dict[str, str]]]:
     fromdate = attributes.pop("fromdate", None)
     todate = attributes.pop("todate", None)
@@ -66,8 +84,14 @@ async def sort_many(
         attributes["start_time"]["$lte"] = str(todate.time())
 
     logger.info(
-        f"records.sort_many got filter obj: {attributes}, page_number: {page_number}, page_size: {page_size}"
+        f"records.sort_many got filter obj: {attributes}, page_number: {page_number}, page_size: {page_size}, "
+        f"ignore_autorec: {ignore_autorec}, with_keywords_only: {with_keywords_only}"
     )
+
+    if ignore_autorec:
+        attributes["type"] = {"$in": rec_types[:-1]}
+    if with_keywords_only:
+        attributes["keywords"] = {"$type": "array", "$not": {"$size": 0}}
 
     return [
         mongo_to_dict(record)
