@@ -27,8 +27,9 @@ async def get_records(
     page_number: int = 0,
     with_keywords_only: bool = False,
     ignore_autorec: bool = False,
+    camera_ip: Optional[str] = None,
 ):
-    if all(p is None for p in [fromdate, todate, room_name, url]):
+    if all(p is None for p in [fromdate, todate, room_name, url, camera_ip]):
         return await records.get_all(
             page_number,
             with_keywords_only=with_keywords_only,
