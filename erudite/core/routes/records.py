@@ -90,10 +90,37 @@ async def get_record_by_id(record_id: str):
     responses={409: {"model": Message}},
 )
 async def add_record(record: records.Record, request: Request):
-    if await records.get_by_url(record.url):
+    if (
+        await records.get_by_url(record.url)
+        and record.url is not None
+        and record.url != ""
+    ):
         message = f"Record with url: {record.url}  -  already exists in the database"
         logger.info(message)
         return JSONResponse(status_code=409, content={"message": message})
+
+    if record.type == "Autorecord":
+        str_from_date = f"{record.date} {record.start_time[:5]}"
+        str_to_date = f"{record.date} {record.end_time[:5]}"
+
+        from_date = datetime.strptime(str_from_date, "%Y-%m-%d %H:%M")
+        to_date = datetime.strptime(str_to_date, "%Y-%m-%d %H:%M")
+
+        filter_args = {
+            "room_name": record.room_name,
+            "fromdate": from_date,
+            "todate": to_date,
+            "camera_ip": record.camera_ip,
+        }
+
+        records_found = await records.sort_many(filter_args, page_number=0)
+
+        print(from_date)
+
+        if records_found:
+            message = "Record that was done in the same room, by the same camera, at the same time already exists in the database"
+            logger.info(message)
+            return JSONResponse(status_code=409, content={"message": message})
 
     return await records.add(await request.json())
 

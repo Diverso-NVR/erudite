@@ -2,6 +2,7 @@ from loguru import logger
 from typing import Dict, Optional, List, Union
 from pydantic import BaseModel, Field
 from bson.objectid import ObjectId
+from datetime import timedelta, datetime
 
 from .models import db
 from .utils import mongo_to_dict
@@ -74,7 +75,12 @@ async def sort_many(
         attributes["date"] = {
             "$gte": str(fromdate.date()),
         }
-        attributes["start_time"] = {"$gte": str(fromdate.time())}
+        time = fromdate.time()
+        attributes["start_time"] = {
+            "$gte": str(
+                timedelta(hours=time.hour, minutes=time.minute) - timedelta(minutes=1)
+            )
+        }
 
     if todate is not None:
         attributes.setdefault("date", {})
