@@ -88,8 +88,6 @@ async def sort_many(
         attributes.pop("start_time")
         attributes.pop("date")
         attributes.setdefault("$and", [])
-        attributes["$and"].append({"start_time": {"$lte": str(todate.time())}})
-        attributes["$and"].append({"start_time": {"$gte": str(fromdate.time())}})
         attributes["$and"].append({"date": {"$lte": str(todate.date())}})
         attributes["$and"].append({"date": {"$gte": str(fromdate.date())}})
 
