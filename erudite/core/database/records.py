@@ -85,8 +85,8 @@ async def sort_many(
         attributes["start_time"]["$lte"] = str(todate.time())
 
     if fromdate and todate:
-        attributes.pop("start_time")
-        attributes.pop("date")
+        attributes.pop("start_time", None)
+        attributes.pop("date", None)
         attributes.setdefault("$and", [])
         attributes["$and"].append({"date": {"$lte": str(todate.date())}})
         attributes["$and"].append({"date": {"$gte": str(fromdate.date())}})
@@ -100,6 +100,8 @@ async def sort_many(
         attributes["type"] = {"$in": rec_types[:-1]}
     if with_keywords_only:
         attributes["keywords"] = {"$type": "array", "$not": {"$size": 0}}
+
+    print(attributes)
 
     return [
         mongo_to_dict(record)
