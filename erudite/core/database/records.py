@@ -88,8 +88,12 @@ async def sort_many(
         attributes.pop("start_time", None)
         attributes.pop("date", None)
         attributes.setdefault("$and", [])
-        attributes["$and"].append({"date": {"$lte": str(todate.date())}})
-        attributes["$and"].append({"date": {"$gte": str(fromdate.date())}})
+        if str(todate.date()) != str(fromdate.date()):
+            attributes["$and"].append({"date": {"$lte": str(todate.date())}})
+            attributes["$and"].append({"date": {"$gte": str(fromdate.date())}})
+        else:
+            attributes["$and"].append({"start_time": {"$gte": str(fromdate.time())}})
+            attributes["$and"].append({"end_time": {"$lte": str(todate.time())}})
 
     logger.info(
         f"records.sort_many got filter obj: {attributes}, page_number: {page_number}, page_size: {page_size}, "
