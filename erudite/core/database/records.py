@@ -101,7 +101,7 @@ async def sort_many(
     if with_keywords_only:
         attributes["keywords"] = {"$type": "array", "$not": {"$size": 0}}
 
-    print(attributes)
+    logger.info(attributes)
 
     return [
         mongo_to_dict(record)
