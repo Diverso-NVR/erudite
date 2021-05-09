@@ -90,7 +90,11 @@ async def get_record_by_id(record_id: str):
     responses={409: {"model": Message}},
 )
 async def add_record(record: records.Record, request: Request):
-    if await records.get_by_url(record.url) and record.url is not None and record.url != "":
+    if (
+        await records.get_by_url(record.url)
+        and record.url is not None
+        and record.url != ""
+    ):
         message = f"Record with url: {record.url}  -  already exists in the database"
         logger.info(message)
         return JSONResponse(status_code=409, content={"message": message})
