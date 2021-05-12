@@ -67,12 +67,12 @@ async def sort_many(
     page_size: int = 50,
     with_keywords_only: bool = False,
     ignore_autorec: bool = False,
-    merger: bool = False,
+    old: bool = False,
 ) -> Optional[List[Dict[str, str]]]:
     fromdate = attributes.pop("fromdate", None)
     todate = attributes.pop("todate", None)
 
-    if not merger:
+    if old:
         if fromdate:
             attributes["date"] = {
                 "$gte": str(fromdate.date()),
