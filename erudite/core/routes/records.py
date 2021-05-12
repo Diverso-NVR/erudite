@@ -28,6 +28,7 @@ async def get_records(
     with_keywords_only: bool = False,
     ignore_autorec: bool = False,
     camera_ip: Optional[str] = None,
+    merger: bool = False,
 ):
     if all(p is None for p in [fromdate, todate, room_name, url, camera_ip]):
         return await records.get_all(
@@ -47,6 +48,7 @@ async def get_records(
         page_number,
         with_keywords_only=with_keywords_only,
         ignore_autorec=ignore_autorec,
+        merger=merger,
     )
     if records_found:
         return records_found

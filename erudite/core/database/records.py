@@ -67,33 +67,50 @@ async def sort_many(
     page_size: int = 50,
     with_keywords_only: bool = False,
     ignore_autorec: bool = False,
+    merger: bool = False,
 ) -> Optional[List[Dict[str, str]]]:
     fromdate = attributes.pop("fromdate", None)
     todate = attributes.pop("todate", None)
 
-    if fromdate:
-        attributes["date"] = {
-            "$gte": str(fromdate.date()),
-        }
-        attributes["start_time"] = {"$gte": str(fromdate.time())}
+    if not merger:
+        if fromdate:
+            attributes["date"] = {
+                "$gte": str(fromdate.date()),
+            }
+            attributes["start_time"] = {"$gte": str(fromdate.time())}
 
-    if todate:
-        attributes.setdefault("date", {})
-        attributes["date"]["$lte"] = str(todate.date())
+        if todate:
+            attributes.setdefault("date", {})
+            attributes["date"]["$lte"] = str(todate.date())
 
-        attributes.setdefault("start_time", {})
-        attributes["start_time"]["$lte"] = str(todate.time())
+            attributes.setdefault("start_time", {})
+            attributes["start_time"]["$lte"] = str(todate.time())
 
-    if fromdate and todate:
-        attributes.pop("start_time", None)
-        attributes.pop("date", None)
-        attributes.setdefault("$and", [])
-        if str(todate.date()) != str(fromdate.date()):
-            attributes["$and"].append({"date": {"$lte": str(todate.date())}})
-            attributes["$and"].append({"date": {"$gte": str(fromdate.date())}})
-        else:
-            attributes["$and"].append({"start_time": {"$gte": str(fromdate.time())}})
-            attributes["$and"].append({"end_time": {"$lte": str(todate.time())}})
+        if fromdate and todate:
+            attributes.pop("start_time", None)
+            attributes.pop("date", None)
+            attributes.setdefault("$and", [])
+            if str(todate.date()) != str(fromdate.date()):
+                attributes["$and"].append({"date": {"$lte": str(todate.date())}})
+                attributes["$and"].append({"date": {"$gte": str(fromdate.date())}})
+            else:
+                attributes["$and"].append(
+                    {"start_time": {"$gte": str(fromdate.time())}}
+                )
+                attributes["$and"].append({"end_time": {"$lte": str(todate.time())}})
+    else:
+        if fromdate:
+            attributes["end_point"] = {"$gte": str(fromdate)}
+
+        if todate:
+            attributes["end_point"] = {"$lte": str(todate)}
+
+        if fromdate and todate:
+            attributes.pop("end_point", None)
+            attributes.setdefault("$and", [])
+
+            attributes["$and"].append({"end_point": {"$gte": str(fromdate)}})
+            attributes["$and"].append({"end_point": {"$lte": str(todate)}})
 
     logger.info(
         f"records.sort_many got filter obj: {attributes}, page_number: {page_number}, page_size: {page_size}, "
