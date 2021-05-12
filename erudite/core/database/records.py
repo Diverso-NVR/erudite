@@ -103,14 +103,36 @@ async def sort_many(
             attributes["end_point"] = {"$gte": str(fromdate)}
 
         if todate:
-            attributes["end_point"] = {"$lte": str(todate)}
+            attributes["start_point"] = {"$lte": str(todate)}
 
         if fromdate and todate:
             attributes.pop("end_point", None)
-            attributes.setdefault("$and", [])
+            attributes.setdefault("$or", [])
 
-            attributes["$and"].append({"end_point": {"$gte": str(fromdate)}})
-            attributes["$and"].append({"end_point": {"$lte": str(todate)}})
+            attributes["$or"].append(
+                {
+                    "$and": [
+                        {"end_point": {"$gte": str(fromdate)}},
+                        {"end_point": {"$lte": str(todate)}},
+                    ]
+                }
+            )
+            attributes["$or"].append(
+                {
+                    "$and": [
+                        {"end_point": {"$gte": str(todate)}},
+                        {"start_point": {"$lte": str(fromdate)}},
+                    ]
+                }
+            )
+            attributes["$or"].append(
+                {
+                    "$and": [
+                        {"start_point": {"$gte": str(fromdate)}},
+                        {"start_point": {"$lte": str(fromdate)}},
+                    ]
+                }
+            )
 
     logger.info(
         f"records.sort_many got filter obj: {attributes}, page_number: {page_number}, page_size: {page_size}, "

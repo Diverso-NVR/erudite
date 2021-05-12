@@ -42,6 +42,7 @@ async def get_records(
     filter_args.pop("page_number")
     filter_args.pop("with_keywords_only")
     filter_args.pop("ignore_autorec")
+    filter_args.pop("merger")
 
     records_found = await records.sort_many(
         filter_args,
