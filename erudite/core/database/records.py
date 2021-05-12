@@ -94,10 +94,9 @@ async def sort_many(
                 attributes["$and"].append({"date": {"$lte": str(todate.date())}})
                 attributes["$and"].append({"date": {"$gte": str(fromdate.date())}})
             else:
-                attributes["$and"].append(
-                    {"start_time": {"$gte": str(fromdate.time())}}
-                )
+                attributes["$and"].append({"start_time": {"$gte": str(fromdate.time())}})
                 attributes["$and"].append({"end_time": {"$lte": str(todate.time())}})
+                attributes["date"] = str(todate.date())
     else:
         if fromdate:
             attributes["end_point"] = {"$gte": str(fromdate)}
