@@ -67,71 +67,44 @@ async def sort_many(
     page_size: int = 50,
     with_keywords_only: bool = False,
     ignore_autorec: bool = False,
-    old: bool = False,
 ) -> Optional[List[Dict[str, str]]]:
     fromdate = attributes.pop("fromdate", None)
     todate = attributes.pop("todate", None)
 
-    if old:
-        if fromdate:
-            attributes["date"] = {
-                "$gte": str(fromdate.date()),
+    if fromdate:
+        attributes["end_point"] = {"$gte": str(fromdate)}
+
+    if todate:
+        attributes["start_point"] = {"$lte": str(todate)}
+
+    if fromdate and todate:
+        attributes.pop("end_point", None)
+        attributes.setdefault("$or", [])
+
+        attributes["$or"].append(
+            {
+                "$and": [
+                    {"end_point": {"$gte": str(fromdate)}},
+                    {"end_point": {"$lte": str(todate)}},
+                ]
             }
-            attributes["start_time"] = {"$gte": str(fromdate.time())}
-
-        if todate:
-            attributes.setdefault("date", {})
-            attributes["date"]["$lte"] = str(todate.date())
-
-            attributes.setdefault("start_time", {})
-            attributes["start_time"]["$lte"] = str(todate.time())
-
-        if fromdate and todate:
-            attributes.pop("start_time", None)
-            attributes.pop("date", None)
-            attributes.setdefault("$and", [])
-            if str(todate.date()) != str(fromdate.date()):
-                attributes["$and"].append({"date": {"$lte": str(todate.date())}})
-                attributes["$and"].append({"date": {"$gte": str(fromdate.date())}})
-            else:
-                attributes["$and"].append({"start_time": {"$gte": str(fromdate.time())}})
-                attributes["$and"].append({"end_time": {"$lte": str(todate.time())}})
-                attributes["date"] = str(todate.date())
-    else:
-        if fromdate:
-            attributes["end_point"] = {"$gte": str(fromdate)}
-
-        if todate:
-            attributes["start_point"] = {"$lte": str(todate)}
-
-        if fromdate and todate:
-            attributes.pop("end_point", None)
-            attributes.setdefault("$or", [])
-
-            attributes["$or"].append(
-                {
-                    "$and": [
-                        {"end_point": {"$gte": str(fromdate)}},
-                        {"end_point": {"$lte": str(todate)}},
-                    ]
-                }
-            )
-            attributes["$or"].append(
-                {
-                    "$and": [
-                        {"end_point": {"$gte": str(todate)}},
-                        {"start_point": {"$lte": str(fromdate)}},
-                    ]
-                }
-            )
-            attributes["$or"].append(
-                {
-                    "$and": [
-                        {"start_point": {"$gte": str(fromdate)}},
-                        {"start_point": {"$lte": str(fromdate)}},
-                    ]
-                }
-            )
+        )
+        attributes["$or"].append(
+            {
+                "$and": [
+                    {"end_point": {"$gte": str(todate)}},
+                    {"start_point": {"$lte": str(fromdate)}},
+                ]
+            }
+        )
+        attributes["$or"].append(
+            {
+                "$and": [
+                    {"start_point": {"$gte": str(fromdate)}},
+                    {"start_point": {"$lte": str(fromdate)}},
+                ]
+            }
+        )
 
     logger.info(
         f"records.sort_many got filter obj: {attributes}, page_number: {page_number}, page_size: {page_size}, "
@@ -147,7 +120,6 @@ async def sort_many(
         mongo_to_dict(record)
         async for record in records_collection.find(attributes)
         .sort("_id", 1)
-        .sort("date", -1)
         .skip(page_number * page_size if page_number > 0 else 0)
         .limit(page_size)
     ]
