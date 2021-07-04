@@ -2,6 +2,7 @@ from loguru import logger
 from typing import Dict, Optional, List, Union
 from pydantic import BaseModel, Field
 from bson.objectid import ObjectId
+import datetime
 
 from .models import db
 from .utils import mongo_to_dict
@@ -10,57 +11,33 @@ lessons_collection = db.get_collection("lessons")
 
 
 class Lesson(BaseModel):
-    ruz_auditorium: str = Field(..., description="Room name in RUZ", example="104")
-    ruz_auditorium_oid: int = Field(..., description="Room id in RUZ", example=3308)
-    ruz_building: str = Field(
+    schedule_lesson_id: int = Field(
+        ..., description="Lesson id from schedule servise", example=7735895
+    )
+    schedule_auditorium_id: int = Field(
+        ..., description="Room id in schedule servise", example=3308
+    )
+
+    schedule_course_code: str = Field(
         ...,
-        description="Building in which room is located",
-        example="Таллинская ул., д, 34",
-    )
-    ruz_building_oid: int = Field(
-        ..., description="Building id in which room is located", example=2211
-    )
-    ruz_discipline: str = Field(
-        ..., description="Discipline name in RUZ", example="Физика"
-    )
-    ruz_discipline_oid: int = Field(
-        ..., description="Discipline id in RUZ", example=1337
-    )
-    ruz_kind_of_work: str = Field(
-        None,
-        description="Lesson type name from RUZ",
-        example="Практическое занятие on-line",
-    )
-    ruz_kind_of_work_oid: int = Field(
-        ..., description="Lesson type id from RUZ", example=969
-    )
-    ruz_lecturer_title: str = Field(
-        ..., description="Lecturer name from RUZ", example="Даниил Мирталибов"
-    )
-    ruz_lecturer_email: str = Field(
-        None, description="Lecturer email from RUZ", example="dimirtalibov@hse.ru"
-    )
-    ruz_lesson_oid: int = Field(..., description="Lesson id from RUZ", example=7735895)
-    ruz_url: str = Field(
-        None,
-        description="If lesson is online, than this field will have url to lesson room",
-        example="https://meet.miem.hse.ru/520",
+        description="Course code parsed from schedule servise",
+        example="Ф_Б2019_ИТСС_3",
     )
 
-    course_code: str = Field(
-        ..., description="Course code parsed from RUZ", example="Ф_Б2019_ИТСС_3"
+    start_point: datetime.datetime = Field(
+        ...,
+        description="Start datetime of the lesson",
+        example="2021-06-19 18:10:00",
     )
-    gcalendar_event_id: str = Field(
-        None,
-        description="Google Calendar event id. Event is a copy of ruz lesson",
-    )
-    gcalendar_calendar_id: str = Field(
-        None, description="Google Calendar id, where event is stored"
+    end_point: datetime.datetime = Field(
+        ...,
+        description="End datetime of the lesson",
+        example="2021-06-19 18:10:00",
     )
 
-    date: str = Field(..., description="Date of the lesson", example="2020-12-15")
-    start_time: str = Field(..., description="Start time of the lesson", example="9:30")
-    end_time: str = Field(..., description="End time of the lesson", example="10:50")
+    original: dict = Field(..., description="Original json from the schedule servise (like RUZ)")
+
+    group_emails: list = Field([], description="Emails of groups that are connected to this lesson")
 
     class Config:
         extra = "allow"
@@ -79,23 +56,18 @@ async def sort_many(attributes: dict) -> Optional[List[Dict[str, Union[str, int]
     todate = attributes.pop("todate", None)
 
     if fromdate:
-        attributes["date"] = {
-            "$gte": str(fromdate.date()),
+        attributes["start_point"] = {
+            "$gte": fromdate.strftime("%Y-%m-%dT%H:%M:%S"),
         }
-        attributes["start_time"] = {"$gte": str(fromdate.time())}
 
     if todate:
-        attributes.setdefault("date", {})
-        attributes["date"]["$lte"] = str(todate.date())
-
-        attributes.setdefault("start_time", {})
-        attributes["start_time"]["$lte"] = str(todate.time())
+        attributes["end_point"] = {
+            "$lte": todate.strftime("%Y-%m-%dT%H:%M:%S"),
+        }
 
     logger.info(f"lessons.sort_many got filter obj: {attributes}")
 
-    return [
-        mongo_to_dict(lesson) async for lesson in lessons_collection.find(attributes)
-    ]
+    return [mongo_to_dict(lesson) async for lesson in lessons_collection.find(attributes)]
 
 
 async def get_by_id(lesson_id: ObjectId) -> Optional[Dict[str, Union[str, int]]]:
@@ -106,10 +78,12 @@ async def get_by_id(lesson_id: ObjectId) -> Optional[Dict[str, Union[str, int]]]
         return mongo_to_dict(lesson)
 
 
-async def get_by_ruz_id(ruz_lesson_oid: int) -> Optional[Dict[str, Union[str, int]]]:
+async def get_by_schedule_id(
+    schedule_lesson_id: int,
+) -> Optional[Dict[str, Union[str, int]]]:
     """ Get lesson by its id in RUZ """
 
-    lesson = await lessons_collection.find_one({"ruz_lesson_oid": ruz_lesson_oid})
+    lesson = await lessons_collection.find_one({"schedule_lesson_id": schedule_lesson_id})
     if lesson:
         return mongo_to_dict(lesson)
 

@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 
 from loguru import logger
 from typing import Optional, List
-from datetime import datetime
+import datetime
 
 from pydantic import EmailStr
 
@@ -17,47 +17,29 @@ router = APIRouter()
 
 @router.get(
     "/lessons",
-    summary="Get all lessons or lesson by it's ruz id",
+    summary="Get all lessons or lesson by it's schedule id",
     description=(
         "Get a list of all lessons in the database, or a lessons in specified room and datetime"
     ),
     response_model=List[lessons.Lesson],
 )
 async def get_lessons(
-    ruz_auditorium: Optional[str] = None,
-    ruz_auditorium_oid: Optional[int] = None,
-    ruz_discipline: Optional[str] = None,
-    ruz_discipline_oid: Optional[int] = None,
-    ruz_kind_of_work: Optional[str] = None,
-    ruz_kind_of_work_oid: Optional[int] = None,
-    ruz_lecturer_title: Optional[str] = None,
-    ruz_lecturer_email: Optional[EmailStr] = None,
-    ruz_lesson_oid: Optional[int] = None,
-    ruz_url: Optional[str] = None,
+    schedule_lesson_id: Optional[int] = None,
+    url: Optional[str] = None,
     course_code: Optional[str] = None,
-    gcalendar_event_id: Optional[str] = None,
-    gcalendar_calendar_id: Optional[str] = None,
-    fromdate: Optional[datetime] = None,
-    todate: Optional[datetime] = None,
+    fromdate: Optional[datetime.datetime] = None,
+    todate: Optional[datetime.datetime] = None,
+    schedule_auditorium_id: Optional[int] = None,
 ):
     if all(
         p is None
         for p in [
-            ruz_auditorium,
-            ruz_auditorium_oid,
-            ruz_discipline,
-            ruz_discipline_oid,
-            ruz_kind_of_work,
-            ruz_kind_of_work_oid,
-            ruz_lecturer_title,
-            ruz_lesson_oid,
-            ruz_url,
+            schedule_lesson_id,
+            url,
             course_code,
-            gcalendar_event_id,
-            gcalendar_calendar_id,
-            ruz_lecturer_email,
             fromdate,
             todate,
+            schedule_auditorium_id,
         ]
     ):
         logger.info("All lessons returned")
@@ -110,8 +92,8 @@ async def get_lesson_by_id(lesson_id: str):
     responses={409: {"model": Message}},
 )
 async def add_lesson(lesson: lessons.Lesson, request: Request):
-    if await lessons.get_by_ruz_id(lesson.ruz_lesson_oid):
-        message = f"Lesson with ruz id: {lesson.ruz_lesson_oid}  -  already exists in the database"
+    if await lessons.get_by_schedule_id(lesson.schedule_lesson_id):
+        message = f"Lesson with schedule id: {lesson.schedule_lesson_id}  -  already exists in the database"
         logger.info(message)
         return JSONResponse(status_code=409, content={"message": message})
 
